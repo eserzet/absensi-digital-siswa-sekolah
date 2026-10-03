@@ -106,7 +106,7 @@ async function subscribeToPush(): Promise<boolean> {
     // 4. Subscribe to push
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey),
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as unknown as BufferSource,
     });
 
     // 5. Send subscription to server
@@ -247,29 +247,35 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // 2. Vibrate mobile device if supported (PWA Android / modern mobile)
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         try {
-          navigator.vibrate([100, 50, 100]);
+          navigator.vibrate([200, 100, 200, 100, 200]);
         } catch {}
       }
 
       // 3. Dispatch native browser/PWA system notification if granted
       if (isSupported && Notification.permission === 'granted') {
         try {
+          const notifOptions = {
+            body: message,
+            icon: '/pwa-192x192.png',
+            badge: '/favicon.png',
+            vibrate: [200, 100, 200, 100, 200],
+            tag: `nb-${Date.now()}`,
+            renotify: true,
+            requireInteraction: true,
+            silent: false,
+            timestamp: Date.now(),
+            data: {
+              url: '/',
+              timestamp: Date.now(),
+            },
+          };
+
           if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
             navigator.serviceWorker.ready.then((reg) => {
-              reg.showNotification(title, {
-                body: message,
-                icon: '/pwa-192x192.png',
-                badge: '/favicon.png',
-                vibrate: [100, 50, 100],
-                tag: `nb-${Date.now()}`,
-              } as any);
+              reg.showNotification(title, notifOptions as any);
             });
           } else {
-            const notif = new Notification(title, {
-              body: message,
-              icon: '/pwa-192x192.png',
-              badge: '/favicon.png',
-            });
+            const notif = new Notification(title, notifOptions as any);
             if (onClick) {
               notif.onclick = () => {
                 window.focus();

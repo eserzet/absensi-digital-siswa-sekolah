@@ -17,9 +17,12 @@ self.addEventListener('push', (event) => {
     body: data.body || 'Ada pemberitahuan baru dari sekolah.',
     icon: data.icon || '/pwa-192x192.png',
     badge: data.badge || '/favicon.png',
-    vibrate: [100, 50, 100],
+    vibrate: [200, 100, 200, 100, 200],
     tag: data.tag || 'nb-push-' + Date.now(),
     renotify: true,
+    requireInteraction: true,
+    silent: false,
+    timestamp: Date.now(),
     data: {
       url: data.url || '/',
       timestamp: Date.now(),

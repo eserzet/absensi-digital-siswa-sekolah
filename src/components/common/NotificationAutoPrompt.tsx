@@ -257,6 +257,12 @@ export const NotificationAutoPrompt: React.FC = () => {
                           Periksa daftar <b>&quot;Diblokir&quot;</b> di bagian bawah. Jika situs ini tercantum, ketuk nama situsnya lalu pilih <b>&quot;Izinkan&quot;</b> atau <b>&quot;Hapus &amp; Reset&quot;</b>.
                         </span>
                       </li>
+                      <li className="flex items-start gap-2 pt-1 border-t border-slate-200 dark:border-slate-700/60 text-amber-800 dark:text-amber-300 font-medium">
+                        <span className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">!</span>
+                        <span>
+                          <b>Agar Notifikasi Melayang (Pop-Up Banner):</b> Buka Info Aplikasi Chrome di HP &rarr; Notifikasi &rarr; pastikan opsi <b>&quot;Notifikasi Melayang / Floating / Spanduk di Layar&quot;</b> dalam keadaan <b>AKTIF</b>.
+                        </span>
+                      </li>
                     </ol>
                   </div>
                 )}
@@ -283,6 +289,12 @@ export const NotificationAutoPrompt: React.FC = () => {
                       <li className="flex items-start gap-2">
                         <span className="w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
                         <span>Ketuk menu <b>Izin / Notifikasi</b> &rarr; aktifkan sakelar <b>&quot;Izinkan Notifikasi&quot;</b>.</span>
+                      </li>
+                      <li className="flex items-start gap-2 pt-1 border-t border-slate-200 dark:border-slate-700/60 text-teal-900 dark:text-teal-300 font-medium">
+                        <span className="w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">!</span>
+                        <span>
+                          <b>Penting untuk Pop-Up Melayang:</b> Pada menu notifikasi tersebut, pastikan sakelar <b>&quot;Notifikasi Melayang / Floating Notifications / Pop-up di Layar&quot;</b> juga <b>DIAKTIFKAN</b>.
+                        </span>
                       </li>
                     </ol>
                   </div>
