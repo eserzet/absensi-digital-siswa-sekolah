@@ -1,0 +1,525 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   SMA Informatika Nurul Bayan - Smart Attendance Digital
+   Theme System: Modern 2D Hard Shadow & Pure Dark Mode (#080c14)
+   ========================================================================== */
+
+:root {
+  --theme-primary: #047857;
+  --theme-primary-hover: #065f46;
+  --theme-primary-light: #ecfdf5;
+  --theme-primary-border: #a7f3d0;
+  --theme-gradient-from: #047857;
+  --theme-gradient-via: #065f46;
+  --theme-gradient-to: #064e3b;
+  --theme-glow: rgba(16, 185, 129, 0.35);
+  --theme-card-shadow: #047857;
+  color-scheme: light;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CARD SYSTEM: REFINED SOFT GRAY SHADOW (LOW OPACITY, NO HARSH OFFSET)
+   ══════════════════════════════════════════════════════════════════════════ */
+.card-2d {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 18px -2px rgba(100, 116, 139, 0.08), 0 2px 6px -1px rgba(100, 116, 139, 0.04) !important;
+  border-radius: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-2d-slate {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 18px -2px rgba(100, 116, 139, 0.08), 0 2px 6px -1px rgba(100, 116, 139, 0.04) !important;
+  border-radius: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-2d-subtle {
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 10px -2px rgba(100, 116, 139, 0.05) !important;
+  border-radius: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.card-2d:hover, a.card-2d:hover, .card-2d-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -2px rgba(100, 116, 139, 0.12), 0 3px 8px -1px rgba(100, 116, 139, 0.06) !important;
+}
+
+button.card-2d:active, a.card-2d:active, .card-2d-hover:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px -1px rgba(100, 116, 139, 0.04) !important;
+}
+
+/* ── THEME PALETTE OVERRIDES: ALL EMERALD UTILITY CLASSES ADAPT DYNAMICALLY ── */
+
+/* 1. Sapphire (Biru Edukasi & Modern) */
+html[data-theme="sapphire"], :root[data-theme="sapphire"] {
+  --color-emerald-50: #eff6ff;
+  --color-emerald-100: #dbeafe;
+  --color-emerald-200: #bfdbfe;
+  --color-emerald-300: #93c5fd;
+  --color-emerald-400: #60a5fa;
+  --color-emerald-500: #3b82f6;
+  --color-emerald-600: #2563eb;
+  --color-emerald-700: #1d4ed8;
+  --color-emerald-800: #1e40af;
+  --color-emerald-900: #1e3a8a;
+  --color-emerald-950: #172554;
+  --theme-primary: #2563eb;
+  --theme-primary-hover: #1d4ed8;
+  --theme-primary-light: #eff6ff;
+  --theme-primary-border: #bfdbfe;
+  --theme-gradient-from: #1d4ed8;
+  --theme-gradient-via: #1e40af;
+  --theme-gradient-to: #172554;
+  --theme-glow: rgba(37, 99, 235, 0.35);
+}
+
+/* 2. Violet (Ungu Prestasi & Kreatif) */
+html[data-theme="violet"], :root[data-theme="violet"] {
+  --color-emerald-50: #f5f3ff;
+  --color-emerald-100: #ede9fe;
+  --color-emerald-200: #ddd6fe;
+  --color-emerald-300: #c4b5fd;
+  --color-emerald-400: #a78bfa;
+  --color-emerald-500: #8b5cf6;
+  --color-emerald-600: #7c3aed;
+  --color-emerald-700: #6d28d9;
+  --color-emerald-800: #5b21b6;
+  --color-emerald-900: #4c1d95;
+  --color-emerald-950: #2e1065;
+  --theme-primary: #7c3aed;
+  --theme-primary-hover: #6d28d9;
+  --theme-primary-light: #f5f3ff;
+  --theme-primary-border: #ddd6fe;
+  --theme-gradient-from: #6d28d9;
+  --theme-gradient-via: #5b21b6;
+  --theme-gradient-to: #2e1065;
+  --theme-glow: rgba(124, 58, 237, 0.35);
+}
+
+/* 3. Amber (Emas Hangat & Berwibawa) */
+html[data-theme="amber"], :root[data-theme="amber"] {
+  --color-emerald-50: #fffbeb;
+  --color-emerald-100: #fef3c7;
+  --color-emerald-200: #fde68a;
+  --color-emerald-300: #fcd34d;
+  --color-emerald-400: #fbbf24;
+  --color-emerald-500: #f59e0b;
+  --color-emerald-600: #d97706;
+  --color-emerald-700: #b45309;
+  --color-emerald-800: #92400e;
+  --color-emerald-900: #78350f;
+  --color-emerald-950: #451a03;
+  --theme-primary: #d97706;
+  --theme-primary-hover: #b45309;
+  --theme-primary-light: #fffbeb;
+  --theme-primary-border: #fde68a;
+  --theme-gradient-from: #b45309;
+  --theme-gradient-via: #92400e;
+  --theme-gradient-to: #451a03;
+  --theme-glow: rgba(217, 119, 6, 0.35);
+}
+
+/* 4. Ruby (Merah Berani & Dinamis) */
+html[data-theme="ruby"], :root[data-theme="ruby"] {
+  --color-emerald-50: #fef2f2;
+  --color-emerald-100: #fee2e2;
+  --color-emerald-200: #fecaca;
+  --color-emerald-300: #fca5a5;
+  --color-emerald-400: #f87171;
+  --color-emerald-500: #ef4444;
+  --color-emerald-600: #dc2626;
+  --color-emerald-700: #b91c1c;
+  --color-emerald-800: #991b1b;
+  --color-emerald-900: #7f1d1d;
+  --color-emerald-950: #450a0a;
+  --theme-primary: #dc2626;
+  --theme-primary-hover: #b91c1c;
+  --theme-primary-light: #fef2f2;
+  --theme-primary-border: #fecaca;
+  --theme-gradient-from: #b91c1c;
+  --theme-gradient-via: #991b1b;
+  --theme-gradient-to: #450a0a;
+  --theme-glow: rgba(220, 38, 38, 0.35);
+}
+
+/* 5. Onyx (Slate / Elegan Futuristik) */
+html[data-theme="onyx"], :root[data-theme="onyx"] {
+  --color-emerald-50: #f8fafc;
+  --color-emerald-100: #f1f5f9;
+  --color-emerald-200: #e2e8f0;
+  --color-emerald-300: #cbd5e1;
+  --color-emerald-400: #94a3b8;
+  --color-emerald-500: #64748b;
+  --color-emerald-600: #475569;
+  --color-emerald-700: #334155;
+  --color-emerald-800: #1e293b;
+  --color-emerald-900: #0f172a;
+  --color-emerald-950: #020617;
+  --theme-primary: #475569;
+  --theme-primary-hover: #334155;
+  --theme-primary-light: #f8fafc;
+  --theme-primary-border: #cbd5e1;
+  --theme-gradient-from: #334155;
+  --theme-gradient-via: #1e293b;
+  --theme-gradient-to: #0f172a;
+  --theme-glow: rgba(71, 85, 105, 0.35);
+}
+
+/* 6. Emerald (Hijau Khas Sekolah - Bawaan) */
+html[data-theme="emerald"], :root[data-theme="emerald"] {
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+  --color-emerald-950: #022c22;
+  --theme-primary: #047857;
+  --theme-primary-hover: #065f46;
+  --theme-primary-light: #ecfdf5;
+  --theme-primary-border: #a7f3d0;
+  --theme-gradient-from: #047857;
+  --theme-gradient-via: #065f46;
+  --theme-gradient-to: #064e3b;
+  --theme-glow: rgba(16, 185, 129, 0.35);
+}
+
+/* Base transitions */
+body {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE RULES (DEFAULT)
+   ══════════════════════════════════════════════════════════════════════════ */
+html:not(.dark),
+body:not(.dark) {
+  background-color: #ffffff;
+  color: #0f172a;
+  color-scheme: light !important;
+}
+
+html:not(.dark) input[type="date"],
+html:not(.dark) input[type="time"],
+html:not(.dark) select,
+body:not(.dark) input[type="date"],
+body:not(.dark) input[type="time"] {
+  color-scheme: light !important;
+}
+
+html:not(.dark) header,
+html:not(.dark) nav,
+html:not(.dark) aside {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK MODE SYSTEM: DEEP LUXURY BLACK / SLATE (#080c14), NO PUTIH-ABU
+   ══════════════════════════════════════════════════════════════════════════ */
+html.dark,
+body.dark,
+.dark {
+  background-color: #080c14 !important;
+  color: #f8fafc !important;
+  color-scheme: dark !important;
+}
+
+.dark input[type="date"],
+.dark input[type="time"],
+.dark select {
+  color-scheme: dark !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CALENDAR & TIME PICKER INDICATOR VISIBILITY CONTRAST
+   ══════════════════════════════════════════════════════════════════════════ */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: opacity 0.15s ease, filter 0.15s ease, transform 0.15s ease;
+}
+
+/* Di Light Mode: Icon wajib gelap pekat & kontras (#2b3341) di atas latar belakang terang */
+html:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator,
+html:not(.dark) input[type="time"]::-webkit-calendar-picker-indicator,
+body:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator,
+body:not(.dark) input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(20%) !important;
+  opacity: 0.85 !important;
+}
+
+html:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator:hover,
+html:not(.dark) input[type="time"]::-webkit-calendar-picker-indicator:hover,
+body:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator:hover,
+body:not(.dark) input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  filter: brightness(0) saturate(100%) invert(5%) !important;
+  opacity: 1 !important;
+  transform: scale(1.05);
+}
+
+/* Di Dark Mode: Icon wajib putih bersih & kontras (#ffffff) di atas latar belakang gelap */
+html.dark input[type="date"]::-webkit-calendar-picker-indicator,
+html.dark input[type="time"]::-webkit-calendar-picker-indicator,
+body.dark input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark input[type="time"]::-webkit-calendar-picker-indicator,
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(100%) !important;
+  opacity: 0.9 !important;
+}
+
+html.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+html.dark input[type="time"]::-webkit-calendar-picker-indicator:hover,
+body.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+body.dark input[type="time"]::-webkit-calendar-picker-indicator:hover,
+.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.dark input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  filter: brightness(0) saturate(100%) invert(100%) !important;
+  opacity: 1 !important;
+  transform: scale(1.05);
+}
+
+.dark header,
+.dark nav,
+.dark aside {
+  background-color: #0b101e !important;
+  border-color: #1e293b !important;
+}
+
+.dark .bg-white,
+.dark .bg-white\/95,
+.dark .bg-white\/90,
+.dark .bg-white\/85,
+.dark .bg-white\/80 {
+  background-color: #0d1322 !important;
+  color: #f8fafc !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/60,
+.dark .bg-slate-50\/70,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-50\/90,
+.dark .bg-slate-100,
+.dark .bg-gray-50 {
+  background-color: #0b101e !important;
+}
+
+.dark .card-2d {
+  background-color: #0d1322 !important;
+  border-color: #1e293b !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25), 0 2px 6px -1px rgba(0, 0, 0, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+.dark .card-2d-slate {
+  background-color: #0d1322 !important;
+  border-color: #334155 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25), 0 2px 6px -1px rgba(0, 0, 0, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+.dark .card-2d-subtle {
+  background-color: #0d1322 !important;
+  border-color: #1e293b !important;
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.18) !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-100,
+.dark .border-emerald-100,
+.dark .border-emerald-100\/90,
+.dark .border-emerald-100\/80 {
+  border-color: #1e293b !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+.dark .text-slate-700,
+.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.dark .school-brand-title {
+  color: #ffffff !important;
+}
+
+/* Static school brand button in Navbar */
+.school-brand-btn,
+.school-brand-btn:hover,
+.school-brand-btn:focus,
+.school-brand-btn:active {
+  background-color: transparent !important;
+  color: inherit !important;
+  transform: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   AUTH PAGES (LOGIN & REGISTER - STUDENT & ADMIN)
+   ══════════════════════════════════════════════════════════════════════════ */
+.auth-card {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px -4px rgba(100, 116, 139, 0.12), 0 4px 12px -2px rgba(100, 116, 139, 0.06) !important;
+  transition: all 0.2s ease;
+}
+
+.dark .auth-card {
+  background-color: #0d1322 !important;
+  border-color: #1e293b !important;
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.35), 0 4px 14px -2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .auth-card .bg-white {
+  background-color: #0d1322 !important;
+}
+
+.dark .auth-card label {
+  color: #e2e8f0 !important;
+}
+
+.dark .auth-card input:not([type="checkbox"]):not([type="radio"]),
+.dark .auth-card select,
+.dark .auth-card textarea {
+  background-color: #070b14 !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+.dark .auth-card input::placeholder {
+  color: #64748b !important;
+}
+
+.dark .auth-card .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+/* Card Header with dynamic theme gradient */
+.auth-card-header {
+  background: linear-gradient(135deg, var(--theme-gradient-from), var(--theme-gradient-via), var(--theme-gradient-to)) !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Submit action button dynamically adapts to active theme */
+.auth-card button[type="submit"],
+.btn-theme-submit {
+  background: linear-gradient(to right, var(--theme-primary), var(--theme-primary-hover)) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--theme-primary) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 12px 0 rgba(100, 116, 139, 0.16) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.auth-card button[type="submit"]:hover,
+.btn-theme-submit:hover {
+  background: linear-gradient(to right, var(--theme-primary-hover), var(--theme-gradient-to)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px 0 rgba(100, 116, 139, 0.22) !important;
+}
+
+/* Links, icons, and text accent adapt dynamically to active theme */
+.auth-card .text-emerald-600,
+.auth-card .text-emerald-700,
+.auth-card .text-emerald-800,
+.auth-card button.underline,
+.auth-theme-link,
+.auth-theme-icon {
+  color: var(--theme-primary) !important;
+}
+
+/* Secondary button (e.g. Portal Masuk Guru & Admin) */
+.auth-card .bg-emerald-50,
+.auth-card [class*="bg-emerald-50"],
+.auth-theme-btn-secondary {
+  background-color: var(--theme-primary-light) !important;
+  border: 1.5px solid var(--theme-primary-border) !important;
+  color: var(--theme-primary) !important;
+}
+
+.dark .auth-theme-btn-secondary {
+  background-color: #0b101e !important;
+  border-color: var(--theme-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Theme pill badges */
+.auth-theme-badge {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+.auth-theme-border {
+  border-color: var(--theme-primary-border) !important;
+}
+
+.auth-theme-bg-light {
+  background-color: var(--theme-primary-light) !important;
+}
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   QR SCANNER VIEWPORT STYLING (iOS / Safari / PWA COMPATIBILITY)
+   ══════════════════════════════════════════════════════════════════════════ */
+#html5qr-code-full-region {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  border: none !important;
+}
+
+#html5qr-code-full-region video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 1.5rem !important;
+  display: block !important;
+}
+
+#html5qr-code-full-region__scan_region {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#html5qr-code-full-region img[alt="Info icon"] {
+  display: none !important;
+}
+

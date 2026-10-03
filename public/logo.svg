@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <!-- Outer Ring with Golden Yellow / Emerald Accent -->
+  <circle cx="120" cy="120" r="112" fill="#047857" stroke="#10b981" stroke-width="4"/>
+  <circle cx="120" cy="120" r="102" fill="#065f46" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6 3"/>
+  
+  <!-- Islamic Geometric / Shield Background -->
+  <polygon points="120,24 142,42 170,36 182,62 208,74 204,102 222,120 204,138 208,166 182,178 170,204 142,198 120,216 98,198 70,204 58,178 32,166 36,138 18,120 36,102 32,74 58,62 70,36 98,42" fill="#047857" stroke="#f59e0b" stroke-width="1.5" opacity="0.35"/>
+  <circle cx="120" cy="120" r="76" fill="#ffffff" stroke="#047857" stroke-width="3"/>
+
+  <!-- Digital Tech / Cyber Grid Nodes -->
+  <path d="M70 120 L90 120 M150 120 L170 120 M120 70 L120 90 M120 150 L120 170" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="70" cy="120" r="3" fill="#f59e0b"/>
+  <circle cx="170" cy="120" r="3" fill="#f59e0b"/>
+  <circle cx="120" cy="70" r="3" fill="#f59e0b"/>
+  <circle cx="120" cy="170" r="3" fill="#f59e0b"/>
+
+  <!-- Open Book / Al-Quran -->
+  <path d="M85 135 C95 125 110 125 120 130 C130 125 145 125 155 135 L155 152 C145 142 130 142 120 147 C110 142 95 142 85 152 Z" fill="#059669" stroke="#047857" stroke-width="2"/>
+  <path d="M120 130 L120 147" stroke="#ffffff" stroke-width="2"/>
+  <!-- Pen / Informatics Cursor Icon -->
+  <path d="M120 86 L128 106 L120 114 L112 106 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+  <circle cx="120" cy="84" r="4" fill="#047857"/>
+
+  <!-- Arch / Kubah Motif -->
+  <path d="M96 118 C96 100 120 92 120 92 C120 92 144 100 144 118" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Ribbon and School Name -->
+  <path d="M50 178 Q120 196 190 178 L184 194 Q120 210 56 194 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+  <text x="120" y="190" text-anchor="middle" font-family="sans-serif" font-size="8.5" font-weight="bold" fill="#065f46" letter-spacing="0.5">NURUL BAYAN</text>
+
+  <!-- Circular Title Text in SVG -->
+  <path id="textArcTop" d="M 46 120 A 74 74 0 0 1 194 120" fill="none"/>
+  <text font-family="sans-serif" font-size="10.5" font-weight="900" fill="#ffffff" letter-spacing="1">
+    <textPath href="#textArcTop" startOffset="50%" text-anchor="middle">SMA INFORMATIKA</textPath>
+  </text>
+</svg>

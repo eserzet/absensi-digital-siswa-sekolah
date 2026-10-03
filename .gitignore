@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files (NEVER commit real credentials)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Keep the example template
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Lock files (use npm only)
+bun.lock
+yarn.lock
+pnpm-lock.yaml
+
+# Coverage
+coverage/
+
+# Temporary & archives
+*.tmp
+*.swp
+*.zip
+*.tar.gz
+scratch/
