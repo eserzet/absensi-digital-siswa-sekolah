@@ -14,7 +14,8 @@ import {
   X, 
   Building2,
   Smartphone,
-  CheckCircle2
+  CheckCircle2,
+  Instagram
 } from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal.js';
 import { usePWAInstall } from '../../hooks/usePWAInstall.js';
@@ -269,6 +270,34 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
           <HelpCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>Hubungi MIFSRZ (Developer)</span>
         </button>
+
+        {/* Instagram MIFSRZ */}
+        <a
+          href="https://www.instagram.com/eserzet_89?stkn=MWVvNDJpaXVmNTRkOA=="
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-3 bg-white dark:bg-[#0d1322] hover:bg-pink-50/60 dark:hover:bg-pink-950/20 border-2 border-slate-200 dark:border-slate-800 hover:border-pink-300 dark:hover:border-pink-800/60 text-slate-700 dark:text-slate-200 hover:text-pink-600 dark:hover:text-pink-400 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer card-2d group"
+        >
+          <Instagram className="w-4 h-4 text-pink-500 group-hover:scale-110 transition-transform shrink-0" />
+          <span>Instagram MIFSRZ</span>
+        </a>
+
+        {/* X (Twitter) MIFSRZ */}
+        <a
+          href="https://x.com/Eserzet"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-3 bg-white dark:bg-[#0d1322] hover:bg-slate-100 dark:hover:bg-slate-800 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer card-2d group"
+        >
+          <svg 
+            className="w-3.5 h-3.5 fill-current text-slate-800 dark:text-slate-200 group-hover:scale-110 transition-transform shrink-0" 
+            viewBox="0 0 24 24" 
+            aria-hidden="true"
+          >
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
+          <span>X (Twitter) MIFSRZ</span>
+        </a>
 
         <button
           type="button"

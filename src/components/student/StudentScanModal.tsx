@@ -95,7 +95,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
   // Result & Validation State
   const [savedRecord, setSavedRecord] = useState<AttendanceRecord | null>(null);
   const [alreadyAttendedRecord, setAlreadyAttendedRecord] = useState<AttendanceRecord | null>(null);
-  const [todayHoliday, setTodayHoliday] = useState<{ isHoliday: boolean; name?: string } | null>(null);
+  const [todayHoliday, setTodayHoliday] = useState<{ isHoliday: boolean; name?: string; description?: string } | null>(null);
   const [attendanceCutoffTime, setAttendanceCutoffTime] = useState<string>('');
 
   // Step Reset and Lifecycle Initialization
@@ -122,6 +122,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
           has_attended: boolean;
           is_holiday?: boolean;
           holiday_name?: string;
+          holiday_description?: string;
           is_alpha?: boolean;
           attendance?: AttendanceRecord | null;
           settings?: {
@@ -129,6 +130,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
             on_time_limit?: string;
             end_time?: string;
             alpha_cutoff_time?: string;
+            gps_radius_meters?: number;
           };
         }>('/attendance/my-today'),
         api.get<{ success: boolean; qr_code: string }>('/qr/school').catch(() => null),
@@ -151,6 +153,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
               setTodayHoliday({
                 isHoliday: true,
                 name: attRes.holiday_name || 'Hari Libur Sekolah',
+                description: attRes.holiday_description,
               });
               setCurrentStep('holiday');
               return;
@@ -254,7 +257,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
   useEffect(() => {
     if (isOpen && currentStep === 'qr') {
       const timer = setTimeout(() => {
-        startQRScanner();
+        startQRScanner('environment');
       }, 250);
       return () => {
         clearTimeout(timer);
@@ -306,14 +309,17 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
   };
 
   const startQRScanner = async (preferredFacing?: 'environment' | 'user') => {
-    const targetFacing = preferredFacing || qrFacingMode;
+    const targetFacing = preferredFacing || qrFacingMode || 'environment';
     setQrFacingMode(targetFacing);
     setIsQrCameraStarting(true);
     setQrCameraBlocked(false);
     setErrorMessage(null);
+    setIsTorchOn(false);
 
     try {
       await stopQRScanner();
+      // Hardware pause: critical for mobile camera driver to release locks before acquiring next camera
+      await new Promise((resolve) => setTimeout(resolve, 250));
 
       const container = document.getElementById(qrRegionId);
       if (!container) {
@@ -355,55 +361,109 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
       });
       qrScannerRef.current = html5QrCode;
 
-      // ATTEMPT 1: Target facing mode ('environment' for back camera by default)
+      // STEP 1: Query physical cameras to find exact deviceId
+      let availableCameras: Array<{ id: string; label: string }> = [];
       try {
-        await html5QrCode.start(
-          { facingMode: targetFacing },
-          qrConfig,
-          (decodedText) => handleQRScanned(decodedText),
-          () => { }
-        );
-        started = true;
-      } catch (err1) {
-        console.warn(`QR Scanner facingMode ${targetFacing} failed:`, err1);
+        availableCameras = await Html5Qrcode.getCameras();
+      } catch (camErr) {
+        console.warn('Html5Qrcode.getCameras() info:', camErr);
       }
 
-      // ATTEMPT 2: Fallback to opposite facing mode (e.g. if rear fails or device only has selfie/webcam)
-      if (!started) {
-        const oppositeFacing = targetFacing === 'environment' ? 'user' : 'environment';
+      let chosenCameraId: string | null = null;
+      if (availableCameras && availableCameras.length > 0) {
+        const isRear = (label: string) =>
+          /back|rear|environment|belakang|trás|arka|rück|wide|main/i.test(label) ||
+          /facing back/i.test(label) ||
+          /camera2 0/i.test(label);
+        const isFront = (label: string) =>
+          /front|user|depan|selfie|vorne|facetime|avant/i.test(label) ||
+          /facing front/i.test(label) ||
+          /camera2 1/i.test(label);
+
+        if (targetFacing === 'environment') {
+          // Priority 1: Label explicitly indicates rear camera
+          const rearCam = availableCameras.find((c) => isRear(c.label));
+          if (rearCam) {
+            chosenCameraId = rearCam.id;
+          } else {
+            // Priority 2: Any camera that does NOT match front camera
+            const notFrontCam = availableCameras.find((c) => !isFront(c.label));
+            if (notFrontCam) {
+              chosenCameraId = notFrontCam.id;
+            }
+          }
+        } else {
+          // Priority 1: Label explicitly indicates front camera
+          const frontCam = availableCameras.find((c) => isFront(c.label));
+          if (frontCam) {
+            chosenCameraId = frontCam.id;
+          } else {
+            // Priority 2: Any camera that does NOT match rear camera
+            const notRearCam = availableCameras.find((c) => !isRear(c.label));
+            if (notRearCam) {
+              chosenCameraId = notRearCam.id;
+            }
+          }
+        }
+      }
+
+      // ATTEMPT 1: Target exact physical camera by deviceId
+      if (chosenCameraId) {
         try {
           await html5QrCode.start(
-            { facingMode: oppositeFacing },
+            chosenCameraId,
             qrConfig,
             (decodedText) => handleQRScanned(decodedText),
             () => { }
           );
           started = true;
-          setQrFacingMode(oppositeFacing);
-        } catch (err2) {
-          console.warn(`QR Scanner facingMode ${oppositeFacing} fallback failed:`, err2);
+        } catch (errId) {
+          console.warn(`QR Scanner deviceId ${chosenCameraId} failed:`, errId);
         }
       }
 
-      // ATTEMPT 3: Device enumeration fallback
+      // ATTEMPT 2: Exact facingMode constraint
       if (!started) {
         try {
-          const cameras = await Html5Qrcode.getCameras();
-          if (cameras && cameras.length > 0) {
-            const chosenCam = cameras.find((c) =>
-              /back|rear|environment|belakang/i.test(c.label)
-            ) || cameras[0];
+          await html5QrCode.start(
+            { facingMode: { exact: targetFacing } },
+            qrConfig,
+            (decodedText) => handleQRScanned(decodedText),
+            () => { }
+          );
+          started = true;
+        } catch (errExact) {
+          console.warn(`QR Scanner exact facingMode ${targetFacing} failed:`, errExact);
+        }
+      }
 
-            await html5QrCode.start(
-              chosenCam.id,
-              qrConfig,
-              (decodedText) => handleQRScanned(decodedText),
-              () => { }
-            );
-            started = true;
-          }
-        } catch (err3) {
-          console.warn('QR Scanner camera enumeration fallback failed:', err3);
+      // ATTEMPT 3: Standard facingMode constraint
+      if (!started) {
+        try {
+          await html5QrCode.start(
+            { facingMode: targetFacing },
+            qrConfig,
+            (decodedText) => handleQRScanned(decodedText),
+            () => { }
+          );
+          started = true;
+        } catch (errStd) {
+          console.warn(`QR Scanner standard facingMode ${targetFacing} failed:`, errStd);
+        }
+      }
+
+      // ATTEMPT 4: Single-camera fallback (e.g. laptop webcam)
+      if (!started && availableCameras && availableCameras.length === 1) {
+        try {
+          await html5QrCode.start(
+            availableCameras[0].id,
+            qrConfig,
+            (decodedText) => handleQRScanned(decodedText),
+            () => { }
+          );
+          started = true;
+        } catch (errFallback) {
+          console.warn('QR Scanner single-camera fallback failed:', errFallback);
         }
       }
 
@@ -432,26 +492,64 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
 
   const toggleTorch = async () => {
     try {
+      if (qrFacingMode === 'user') {
+        alert('Fitur lampu flash hanya tersedia pada kamera belakang.');
+        return;
+      }
+
+      const nextState = !isTorchOn;
+
+      // Method 1: Html5Qrcode torchFeature
+      if (qrScannerRef.current) {
+        try {
+          const caps = qrScannerRef.current.getRunningTrackCameraCapabilities();
+          const torch = caps?.torchFeature?.();
+          if (torch && torch.isSupported()) {
+            await torch.apply(nextState);
+            setIsTorchOn(nextState);
+            return;
+          }
+        } catch (e1) {
+          console.warn('Html5Qrcode torchFeature method info:', e1);
+        }
+      }
+
+      // Method 2: Video Track applyConstraints
       const videoElem = document.querySelector(`#${qrRegionId} video`) as HTMLVideoElement;
       const stream = videoElem?.srcObject as MediaStream;
       const track = stream?.getVideoTracks()[0];
       if (track) {
         const capabilities: any = track.getCapabilities ? track.getCapabilities() : {};
-        if (capabilities && 'torch' in capabilities === false && isIOS) {
-          alert('Fitur lampu flash/senter kamera tidak didukung pada browser Safari/iOS.');
+        if (capabilities && 'torch' in capabilities) {
+          await track.applyConstraints({
+            advanced: [{ torch: nextState } as any],
+          });
+          setIsTorchOn(nextState);
           return;
         }
-        const nextState = !isTorchOn;
-        await track.applyConstraints({
-          advanced: [{ torch: nextState } as any],
-        });
-        setIsTorchOn(nextState);
+
+        // Method 3: Direct attempt (Chrome Android / PWA webview)
+        try {
+          await track.applyConstraints({
+            advanced: [{ torch: nextState } as any],
+          });
+          setIsTorchOn(nextState);
+          return;
+        } catch (directErr) {
+          console.warn('Direct track constraint failed:', directErr);
+        }
+
+        if (isIOS) {
+          alert('Fitur lampu flash/senter kamera tidak didukung pada browser Safari/iOS.');
+        } else {
+          alert('Perangkat atau browser ini tidak mendukung kontrol lampu flash kamera.');
+        }
       } else {
-        alert('Kamera aktif belum siap atau perangkat tidak memiliki lampu senter.');
+        alert('Kamera belum aktif. Tunggu hingga kamera terbuka.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn('Gagal mengubah lampu senter:', err);
-      alert('Fitur flash/lampu senter tidak didukung atau sedang tidak dapat diakses pada peramban ini.');
+      alert('Tidak dapat mengaktifkan flash kamera: ' + (err?.message || 'Fitur tidak didukung'));
     }
   };
 
@@ -635,10 +733,11 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
   };
 
   // 5. Front Camera Face Documentation (Progressive constraint fallback + iOS WebKit inline)
-  const startFrontCamera = async () => {
+  const startFrontCamera = async (overrideFacing?: 'user' | 'environment') => {
     stopCameraTracks();
     await stopQRScanner();
     setFrontCameraBlocked(false);
+    const activeFacing = overrideFacing || facingMode;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setFrontCameraBlocked(true);
@@ -649,13 +748,13 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
       const constraintsList: MediaStreamConstraints[] = [
         {
           video: {
-            facingMode: facingMode,
+            facingMode: activeFacing,
           },
           audio: false,
         },
         {
           video: {
-            facingMode: facingMode,
+            facingMode: activeFacing,
             width: { ideal: 640 },
             height: { ideal: 480 },
           },
@@ -724,7 +823,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
     const newFacing = facingMode === 'user' ? 'environment' : 'user';
     setFacingMode(newFacing);
     setTimeout(() => {
-      startFrontCamera();
+      startFrontCamera(newFacing);
     }, 200);
   };
 
@@ -948,8 +1047,10 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
                 <p className="text-sm font-bold text-amber-700 mt-1">
                   {todayHoliday.name || 'Jadwal Libur Sekolah'}
                 </p>
-                <p className="text-xs text-slate-600 mt-2 max-w-xs mx-auto leading-relaxed">
-                  Hari ini libur, jadi kamu tidak perlu absen. Selamat TIDUR DI KOBONG!
+                <p className="text-xs text-slate-600 mt-2 max-w-xs mx-auto leading-relaxed whitespace-pre-line">
+                  {todayHoliday.description || (new Date().getDay() === 5
+                    ? "Hari ini libur, jadi tidak perlu absen. Selamat menikmati waktu istirahat bersama teman-teman di kobong!, dan jangan lupa jumatan ya!!!, jangan tidur terus."
+                    : "Hari ini libur sekolah. Siswa tidak perlu melakukan presensi.")}
                 </p>
               </div>
 
@@ -1254,15 +1355,16 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
 
                       <button
                         type="button"
+                        disabled={isQrCameraStarting}
                         onClick={() => {
                           const nextFacing = qrFacingMode === 'environment' ? 'user' : 'environment';
                           startQRScanner(nextFacing);
                         }}
-                        className="px-3 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all cursor-pointer shadow-xs"
-                        title="Ganti Kamera (Depan / Belakang)"
+                        className={`px-3 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all shadow-xs ${isQrCameraStarting ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+                        title={qrFacingMode === 'environment' ? 'Kamera Belakang sedang aktif. Klik untuk beralih ke Kamera Depan' : 'Kamera Depan sedang aktif. Klik untuk beralih ke Kamera Belakang'}
                       >
-                        <SwitchCamera className="w-3.5 h-3.5 text-slate-600" />
-                        <span>{qrFacingMode === 'environment' ? 'Kamera Belakang' : 'Kamera Depan'}</span>
+                        <SwitchCamera className={`w-3.5 h-3.5 text-slate-600 ${isQrCameraStarting ? 'animate-spin' : ''}`} />
+                        <span>{qrFacingMode === 'environment' ? 'Ganti Kamera Depan' : 'Ganti Kamera Belakang'}</span>
                       </button>
                     </div>
                   )}

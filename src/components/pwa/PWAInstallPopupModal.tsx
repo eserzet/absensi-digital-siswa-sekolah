@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Download, 
   X, 
@@ -108,16 +109,16 @@ export const PWAInstallPopupModal: React.FC<PWAInstallPopupModalProps> = ({
 
   const schoolTitle = branding.school_name || 'SMA Informatika Nurul Bayan';
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-6 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div 
         role="dialog"
         aria-modal="true"
         aria-labelledby="pwa-popup-title"
-        className="relative w-full max-w-md max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-[#0d1322] shadow-2xl border border-emerald-100 dark:border-emerald-500/20 overflow-hidden text-slate-800 dark:text-slate-100 animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-md max-h-[85vh] max-h-[85dvh] flex flex-col rounded-3xl bg-white dark:bg-[#0d1322] shadow-2xl border border-emerald-100 dark:border-emerald-500/20 overflow-hidden text-slate-800 dark:text-slate-100 animate-in zoom-in-95 duration-200"
       >
         {/* Decorative Header Banner */}
-        <div className="relative shrink-0 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-800 p-5 sm:p-6 text-white overflow-hidden">
+        <div className="relative shrink-0 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-800 p-4 sm:p-5 text-white overflow-hidden">
           {/* Subtle background glow */}
           <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -left-8 -top-8 w-32 h-32 bg-teal-300/15 rounded-full blur-xl pointer-events-none" />
@@ -127,7 +128,7 @@ export const PWAInstallPopupModal: React.FC<PWAInstallPopupModalProps> = ({
             type="button"
             onClick={handleDismiss}
             aria-label="Tutup Notifikasi"
-            className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-black/35 text-white/90 hover:text-white transition-colors cursor-pointer"
+            className="absolute top-3.5 right-3.5 p-2 rounded-full bg-black/25 hover:bg-black/40 text-white transition-colors cursor-pointer z-10"
           >
             <X className="w-4 h-4" />
           </button>
@@ -153,7 +154,7 @@ export const PWAInstallPopupModal: React.FC<PWAInstallPopupModalProps> = ({
         </div>
 
         {/* Content Body (Scrollable if screen is small) */}
-        <div className="p-5 sm:p-6 space-y-4 overflow-y-auto max-h-[calc(92vh-130px)]">
+        <div className="p-4 sm:p-5 space-y-3.5 flex-1 overflow-y-auto overscroll-contain">
           {installSuccess ? (
             <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-2.5 animate-in zoom-in-95">
               <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 flex items-center justify-center mx-auto">
@@ -457,4 +458,10 @@ export const PWAInstallPopupModal: React.FC<PWAInstallPopupModalProps> = ({
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+
+  return modalContent;
 };

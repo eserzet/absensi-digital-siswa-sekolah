@@ -29,12 +29,13 @@ export function isSunday(dateStr: string): boolean {
 export function checkIsHoliday(
   dateStr: string, 
   customHolidays: Holiday[] = []
-): { isHoliday: boolean; name?: string; isFriday: boolean } {
-  // 1. Hari Jumat otomatis hari libur mingguan
+): { isHoliday: boolean; name?: string; description?: string; isFriday: boolean } {
+  // 1. Hari Jumat otomatis hari libur mingguan madrasah
   if (isFriday(dateStr)) {
     return {
       isHoliday: true,
       name: 'Hari Libur Mingguan (Jumat Berkah)',
+      description: 'Hari ini libur, jadi tidak perlu absen. Selamat menikmati waktu istirahat bersama teman-teman di kobong!, dan jangan lupa jumatan ya!!!, jangan tidur terus.',
       isFriday: true,
     };
   }
@@ -46,6 +47,7 @@ export function checkIsHoliday(
     return {
       isHoliday: true,
       name: found.name,
+      description: found.description || 'Hari ini libur sekolah. Siswa tidak perlu melakukan presensi.',
       isFriday: false,
     };
   }

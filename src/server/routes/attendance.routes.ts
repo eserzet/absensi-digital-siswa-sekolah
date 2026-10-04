@@ -645,6 +645,7 @@ router.get('/my-today', async (req: Request, res: Response) => {
     today_date: todayDate,
     is_holiday: holidayCheck.isHoliday,
     holiday_name: holidayCheck.name,
+    holiday_description: holidayCheck.description,
     has_attended: Boolean(record),
     is_alpha: isAlpha,
     attendance: record || null,
@@ -653,6 +654,7 @@ router.get('/my-today', async (req: Request, res: Response) => {
       on_time_limit: onTimeLimit,
       end_time: endTime,
       alpha_cutoff_time: endTime,
+      gps_radius_meters: Number(settings.gps_radius_meters) || 100,
     },
   });
 });

@@ -31,6 +31,7 @@ interface StudentHomeProps {
   todayRecord?: AttendanceRecord | null;
   isHoliday?: boolean;
   holidayName?: string;
+  holidayDescription?: string;
   announcements?: Announcement[];
   onOpenScan: () => void;
   onOpenAnnouncements?: () => void;
@@ -46,6 +47,7 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
   todayRecord: propTodayRecord,
   isHoliday: propIsHoliday,
   holidayName: propHolidayName,
+  holidayDescription: propHolidayDescription,
   announcements: propAnnouncements,
   onOpenScan,
   onOpenAnnouncements,
@@ -62,12 +64,18 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
   const [internalHolidayName, setInternalHolidayName] = useState<string>(
     new Date().getDay() === 5 ? 'Libur Mingguan (Jumat Berkah)' : ''
   );
+  const [internalHolidayDescription, setInternalHolidayDescription] = useState<string>(() =>
+    new Date().getDay() === 5
+      ? "Hari ini libur, jadi tidak perlu absen. Selamat menikmati waktu istirahat bersama teman-teman di kobong!, dan jangan lupa jumatan ya!!!, jangan tidur terus."
+      : ""
+  );
   const [internalAnnouncements, setInternalAnnouncements] = useState<Announcement[]>([]);
   const [isAnnouncementsModalOpen, setIsAnnouncementsModalOpen] = useState(false);
   const [attendanceSettings, setAttendanceSettings] = useState<{
     start_time: string;
     on_time_limit: string;
     end_time: string;
+    gps_radius_meters: number;
   } | null>(null);
 
   useEffect(() => {
@@ -77,11 +85,13 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
       attendance: AttendanceRecord | null;
       is_holiday?: boolean;
       holiday_name?: string;
+      holiday_description?: string;
       settings?: {
         start_time?: string;
         on_time_limit?: string;
         end_time?: string;
         alpha_cutoff_time?: string;
+        gps_radius_meters?: number;
       };
     }>('/attendance/my-today')
       .then((res) => {
@@ -94,11 +104,13 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
               start_time: res.settings.start_time || '06:00',
               on_time_limit: res.settings.on_time_limit || '07:15',
               end_time: res.settings.end_time || res.settings.alpha_cutoff_time || '11:30',
+              gps_radius_meters: Number(res.settings.gps_radius_meters) || 100,
             });
           }
           if (propIsHoliday === undefined && res.is_holiday !== undefined) {
             setInternalIsHoliday(Boolean(res.is_holiday));
             if (res.holiday_name) setInternalHolidayName(res.holiday_name);
+            if (res.holiday_description) setInternalHolidayDescription(res.holiday_description);
           }
         }
       })
@@ -123,6 +135,7 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
   const effectiveTodayRecord = propTodayRecord !== undefined ? propTodayRecord : internalTodayRecord;
   const effectiveIsHoliday = propIsHoliday !== undefined ? propIsHoliday : internalIsHoliday;
   const effectiveHolidayName = propHolidayName !== undefined ? propHolidayName : internalHolidayName;
+  const effectiveHolidayDescription = propHolidayDescription !== undefined ? propHolidayDescription : internalHolidayDescription;
   const effectiveAnnouncements = (propAnnouncements && propAnnouncements.length > 0)
     ? propAnnouncements
     : internalAnnouncements;
@@ -279,8 +292,10 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
                 <h4 className="font-bold text-sm text-amber-950 dark:text-amber-100">
                   {effectiveHolidayName || 'Hari Libur Madrasah'}
                 </h4>
-                <p className="text-xs text-amber-800 dark:text-amber-300 mt-1 leading-relaxed">
-                  Hari ini libur, jadi tidak perlu absen. Selamat menikmati waktu istirahat bersama teman-teman di kobong!, dan jangan lupa jumatan ya!!!, jangan tidur terus.
+                <p className="text-xs text-amber-800 dark:text-amber-300 mt-1 leading-relaxed whitespace-pre-line">
+                  {effectiveHolidayDescription || (new Date().getDay() === 5
+                    ? "Hari ini libur, jadi tidak perlu absen. Selamat menikmati waktu istirahat bersama teman-teman di kobong!, dan jangan lupa jumatan ya!!!, jangan tidur terus."
+                    : "Hari ini libur sekolah. Siswa tidak perlu melakukan presensi.")}
                 </p>
               </div>
             </div>
@@ -491,10 +506,12 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
       <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-[#091a14] border border-emerald-200 dark:border-emerald-800/60 text-slate-700 dark:text-slate-200 text-xs flex items-start gap-3 card-2d transition-all">
         <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
         <div className="space-y-1 text-[11px] leading-relaxed">
-          <p className="font-bold text-emerald-900 dark:text-emerald-300">Aturan Presensi SMA Informatika Nurul Bayan:</p>
-          <p>• Waktu Masuk Tepat Waktu: Sebelum pukul 07:15 WIB.</p>
-          <p>• Absensi setelah batas waktu otomatis tercatat <b>TERLAMBAT</b>.</p>
-          <p>• Radius GPS maksimal 100m dari gerbang sekolah.</p>
+          <p className="font-bold text-emerald-900 dark:text-emerald-300">
+            Aturan Presensi {branding?.school_name || 'SMA Informatika Nurul Bayan'}:
+          </p>
+          <p>• Waktu Masuk Tepat Waktu: Sebelum pukul {attendanceSettings?.on_time_limit || '07:15'} WIB.</p>
+          <p>• Absensi setelah pukul {attendanceSettings?.on_time_limit || '07:15'} WIB otomatis tercatat <b>TERLAMBAT</b>.</p>
+          <p>• Radius GPS maksimal {attendanceSettings?.gps_radius_meters ?? 100}m dari gerbang sekolah.</p>
           <p>• Wajib dokumentasi swafoto menggunakan seragam madrasah.</p>
         </div>
       </div>

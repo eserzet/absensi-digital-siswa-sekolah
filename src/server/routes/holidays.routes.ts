@@ -37,6 +37,7 @@ router.get('/', async (req: Request, res: Response) => {
       is_sunday: todayIsSunday,
       is_holiday: holidayCheck.isHoliday,
       holiday_name: holidayCheck.name,
+      holiday_description: holidayCheck.description,
     },
     holidays,
   });
@@ -54,8 +55,9 @@ router.get(['/check-today', '/today'], async (req: Request, res: Response) => {
       is_holiday: true,
       date: todayStr,
       holiday_name: holidayCheck.name,
+      holiday_description: holidayCheck.description,
       is_friday: holidayCheck.isFriday,
-      message: `Hari ini libur: ${holidayCheck.name}. Siswa tidak perlu melakukan absensi.`,
+      message: holidayCheck.description || `Hari ini libur: ${holidayCheck.name}. Siswa tidak perlu melakukan absensi.`,
     });
   }
 
@@ -64,6 +66,7 @@ router.get(['/check-today', '/today'], async (req: Request, res: Response) => {
     is_holiday: false,
     date: todayStr,
     holiday_name: null,
+    holiday_description: null,
     message: 'Hari ini adalah hari aktif sekolah.',
   });
 });
@@ -71,7 +74,7 @@ router.get(['/check-today', '/today'], async (req: Request, res: Response) => {
 // 2. POST /api/holidays (Admin add custom holiday to Supabase)
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { date, name, is_recurring = false } = req.body;
+    const { date, name, description, is_recurring = false } = req.body;
 
     if (!date || !name) {
       return res.status(400).json({
@@ -100,6 +103,7 @@ router.post('/', async (req: Request, res: Response) => {
       id: crypto.randomUUID(),
       date,
       name: name.trim(),
+      description: description ? description.trim() : null,
       is_recurring: Boolean(is_recurring),
       is_friday: dateIsFriday,
       created_at: new Date().toISOString(),

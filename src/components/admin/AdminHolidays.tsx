@@ -22,6 +22,7 @@ export const AdminHolidays: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDate, setNewDate] = useState('');
   const [newName, setNewName] = useState('');
+  const [newDescription, setNewDescription] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [fridayWarning, setFridayWarning] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,6 +89,7 @@ export const AdminHolidays: React.FC = () => {
       }>('/holidays', {
         date: newDate,
         name: newName.trim(),
+        description: newDescription.trim(),
         is_recurring: isRecurring,
       });
 
@@ -96,6 +98,7 @@ export const AdminHolidays: React.FC = () => {
         setShowAddModal(false);
         setNewDate('');
         setNewName('');
+        setNewDescription('');
         setIsRecurring(false);
         setFridayWarning(null);
       } else {
@@ -146,6 +149,7 @@ export const AdminHolidays: React.FC = () => {
             setShowAddModal(true);
             setFridayWarning(null);
             setErrorMessage(null);
+            setNewDescription('');
           }}
           className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
         >
@@ -200,7 +204,12 @@ export const AdminHolidays: React.FC = () => {
                     <h4 className="font-bold text-xs sm:text-sm text-slate-900">
                       {h.name}
                     </h4>
-                    <span className="text-xs text-slate-500 font-mono">
+                    {h.description && (
+                      <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+                        {h.description}
+                      </p>
+                    )}
+                    <span className="text-[11px] text-slate-400 font-mono mt-0.5 block">
                       {h.date} {h.is_recurring && '• (Berulang Tiap Tahun)'}
                     </span>
                   </div>
@@ -269,7 +278,7 @@ export const AdminHolidays: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Nama / Keterangan Hari Libur
+                  Nama / Judul Hari Libur
                 </label>
                 <input
                   type="text"
@@ -279,6 +288,22 @@ export const AdminHolidays: React.FC = () => {
                   placeholder="Contoh: Hari Guru Nasional / Libur Semester"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Deskripsi / Pesan Khusus Libur
+                </label>
+                <textarea
+                  rows={3}
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Contoh: Selamat menikmati libur Hari Guru Nasional bersama keluarga. Tetap jaga kesehatan dan rajin mengulang pelajaran di rumah!"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500 resize-none leading-relaxed"
+                />
+                <span className="text-[11px] text-slate-400 mt-1 block">
+                  Deskripsi ini akan otomatis tampil di layar Beranda Siswa pada saat hari libur berlangsung.
+                </span>
               </div>
 
               <div className="flex items-center gap-2 pt-1">

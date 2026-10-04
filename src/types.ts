@@ -76,6 +76,7 @@ export interface Holiday {
   id: string;
   date: string; // YYYY-MM-DD
   name: string;
+  description?: string | null;
   is_recurring?: boolean;
   is_friday?: boolean;
   created_at?: string;

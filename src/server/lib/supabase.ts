@@ -1240,6 +1240,7 @@ export const supabaseHolidays = {
           id: h.id,
           date: h.date,
           name: h.name,
+          description: h.description || null,
           is_recurring: Boolean(h.is_recurring),
           is_friday: isFri,
           created_at: h.created_at,
@@ -1256,6 +1257,7 @@ export const supabaseHolidays = {
         id: toValidUUID(holiday.id),
         date: holiday.date,
         name: holiday.name.trim(),
+        description: holiday.description ? holiday.description.trim() : null,
         is_recurring: Boolean(holiday.is_recurring),
         created_at: holiday.created_at || new Date().toISOString(),
       };

@@ -99,10 +99,14 @@ CREATE TABLE IF NOT EXISTS public.holidays (
   id TEXT PRIMARY KEY,
   date DATE UNIQUE NOT NULL,
   name TEXT NOT NULL,
+  description TEXT,
   is_recurring BOOLEAN DEFAULT false,
   is_friday BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Migration jika tabel holidays sudah ada sebelumnya:
+ALTER TABLE public.holidays ADD COLUMN IF NOT EXISTS description TEXT;
 
 -- 8. Tabel Lokasi Titik Pusat Sekolah & Radius Geofence (School Location)
 CREATE TABLE IF NOT EXISTS public.school_location (
