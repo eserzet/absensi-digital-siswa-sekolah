@@ -60,6 +60,11 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Guard flag: prevents camera/GPS from being accessed before API validation confirms
+  // that the student hasn't already attended today. Solves the race condition where
+  // hardware permission prompts appear even when the user has already completed attendance.
+  const [validationDone, setValidationDone] = useState(false);
+
   // Step 1: QR State
   const [scannedQR, setScannedQR] = useState<string | null>(null);
   const [schoolQRCode, setSchoolQRCode] = useState<string>('NUBA-SMART-ATTENDANCE-2026-NURUL-BAYAN');
@@ -102,6 +107,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setCurrentStep('validating');
+      setValidationDone(false);
       setCapturedPhoto(null);
       setUserLocation(null);
       setDistanceMeters(null);
@@ -215,24 +221,30 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
               return;
             }
 
-            // Student is eligible to scan attendance
+            // Student is eligible to scan attendance — NOW allow hardware access
+            setValidationDone(true);
             setCurrentStep('qr');
           } else {
+            setValidationDone(true);
             setCurrentStep('qr');
           }
         })
         .catch(() => {
+          setValidationDone(true);
           setCurrentStep('qr');
         });
     } else {
+      setValidationDone(false);
       stopCameraTracks();
       stopQRScanner();
     }
   }, [isOpen]);
 
-  // 2. Pre-fetch GPS in background when modal is open if permission was previously granted
+  // 2. Pre-fetch GPS in background ONLY after validation confirms student needs to attend.
+  // This prevents GPS prompts from firing when the user has already attended or it's a holiday.
   useEffect(() => {
-    if (isOpen && (permissions.geolocation === 'granted' || localStorage.getItem('nb_location_granted') === 'true')) {
+    if (isOpen && validationDone && currentStep !== 'already_attended' && currentStep !== 'holiday' &&
+        (permissions.geolocation === 'granted' || localStorage.getItem('nb_location_granted') === 'true')) {
       if (navigator.geolocation && !userLocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -251,11 +263,13 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
         );
       }
     }
-  }, [isOpen, permissions.geolocation, schoolLocation.latitude, schoolLocation.longitude, schoolLocation.radius_meters]);
+  }, [isOpen, validationDone, currentStep, permissions.geolocation, schoolLocation.latitude, schoolLocation.longitude, schoolLocation.radius_meters]);
 
-  // 3. Initialize QR Scanner when on 'qr' step
+  // 3. Initialize QR Scanner when on 'qr' step — ONLY after validation is done.
+  // This guard prevents the camera permission prompt from appearing before the API
+  // has confirmed whether the student has already attended today.
   useEffect(() => {
-    if (isOpen && currentStep === 'qr') {
+    if (isOpen && currentStep === 'qr' && validationDone) {
       const timer = setTimeout(() => {
         startQRScanner('environment');
       }, 250);
@@ -264,7 +278,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
         stopQRScanner();
       };
     }
-  }, [isOpen, currentStep]);
+  }, [isOpen, currentStep, validationDone]);
 
   const stopQRScanner = async () => {
     setIsTorchOn(false);
