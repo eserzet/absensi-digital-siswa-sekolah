@@ -12,11 +12,14 @@ import {
   X 
 } from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal.js';
+import { useNotification } from '../../context/NotificationContext.js';
 
 export const AdminHolidays: React.FC = () => {
+  const { sendNotification } = useNotification();
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [fridayRule, setFridayRule] = useState<string>('Setiap hari Jumat otomatis merupakan hari libur madrasah.');
   const [isLoading, setIsLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Add holiday form state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -146,6 +149,19 @@ export const AdminHolidays: React.FC = () => {
         setNewDescription('');
         setIsRecurring(false);
         setFridayWarning(null);
+
+        // Notifikasi audio chime + in-app toast sistem
+        sendNotification(
+          `🏖️ Libur Sekolah: ${res.holiday.name}`,
+          `Hari libur berhasil ditetapkan dan disiarkan ke seluruh perangkat siswa.`,
+          'announcement'
+        );
+
+        setToastMessage({
+          text: `Hari libur "${res.holiday.name}" berhasil disimpan dan notifikasi telah disiarkan ke seluruh siswa.`,
+          type: 'success',
+        });
+        setTimeout(() => setToastMessage(null), 5000);
       } else {
         setErrorMessage(res.message || 'Gagal menambahkan hari libur.');
       }
@@ -163,6 +179,11 @@ export const AdminHolidays: React.FC = () => {
       const res = await api.delete<{ success: boolean }>(`/holidays/${deleteTarget.id}`);
       if (res.success) {
         setHolidays((prev) => prev.filter((h) => h.id !== deleteTarget.id));
+        setToastMessage({
+          text: `Hari libur "${deleteTarget.name}" berhasil dihapus.`,
+          type: 'success',
+        });
+        setTimeout(() => setToastMessage(null), 4000);
       }
     } catch (err) {
       alert('Gagal menghapus hari libur.');
@@ -202,6 +223,33 @@ export const AdminHolidays: React.FC = () => {
           <span>Tambah Hari Libur</span>
         </button>
       </div>
+
+      {/* Toast Feedback */}
+      {toastMessage && (
+        <div
+          className={`p-4 rounded-2xl border text-xs font-bold flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 ${
+            toastMessage.type === 'success'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
+              : 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {toastMessage.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+            )}
+            <span>{toastMessage.text}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Friday Special Notification Banner */}
       <div className="p-5 rounded-3xl bg-amber-50 border border-amber-200/80 text-amber-900 flex items-start gap-4">
@@ -393,7 +441,7 @@ export const AdminHolidays: React.FC = () => {
                   rows={3}
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Contoh: Selamat menikmati libur Hari Guru Nasional bersama keluarga. Tetap jaga kesehatan dan rajin mengulang pelajaran di rumah!"
+                  placeholder="Contoh: Selamat menikmati libur Nasional bersama keluarga. Tetap jaga kesehatan dan rajin mengulang pelajaran di rumah!"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:ring-2 focus:ring-emerald-500 resize-none leading-relaxed"
                 />
                 <span className="text-[11px] text-slate-400 mt-1 block">
