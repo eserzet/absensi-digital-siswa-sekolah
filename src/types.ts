@@ -74,7 +74,8 @@ export interface QRCodeConfig {
 
 export interface Holiday {
   id: string;
-  date: string; // YYYY-MM-DD
+  date: string; // YYYY-MM-DD (Tanggal Mulai)
+  end_date?: string | null; // YYYY-MM-DD (Tanggal Selesai, jika rentang hari)
   name: string;
   description?: string | null;
   is_recurring?: boolean;

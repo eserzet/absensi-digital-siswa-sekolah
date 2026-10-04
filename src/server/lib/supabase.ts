@@ -1239,6 +1239,7 @@ export const supabaseHolidays = {
         return {
           id: h.id,
           date: h.date,
+          end_date: h.end_date || null,
           name: h.name,
           description: h.description || null,
           is_recurring: Boolean(h.is_recurring),
@@ -1253,7 +1254,7 @@ export const supabaseHolidays = {
     const supabase = getSupabaseAdmin();
     if (!supabase) return null;
     try {
-      const payload = {
+      const payload: Record<string, any> = {
         id: toValidUUID(holiday.id),
         date: holiday.date,
         name: holiday.name.trim(),
@@ -1261,7 +1262,21 @@ export const supabaseHolidays = {
         is_recurring: Boolean(holiday.is_recurring),
         created_at: holiday.created_at || new Date().toISOString(),
       };
-      const { data, error } = await supabase.from('holidays').insert(payload).select().single();
+      if (holiday.end_date) {
+        payload.end_date = holiday.end_date;
+      }
+
+      let { data, error } = await supabase.from('holidays').insert(payload).select().single();
+
+      // Fallback jika kolom end_date belum ada di database Supabase
+      if (error && (error.message?.includes('end_date') || error.code === '42703')) {
+        console.warn('[Holidays] Kolom end_date belum ada di database Supabase. Mencoba simpan tanpa kolom end_date...');
+        delete payload.end_date;
+        const resRetry = await supabase.from('holidays').insert(payload).select().single();
+        data = resRetry.data;
+        error = resRetry.error;
+      }
+
       if (error) {
         console.error('[Holidays] create error:', error.message, error.code);
         return null;
@@ -1269,6 +1284,7 @@ export const supabaseHolidays = {
       const d = new Date(data.date);
       return {
         ...data,
+        end_date: data.end_date || holiday.end_date || null,
         is_friday: !isNaN(d.getTime()) && d.getDay() === 5,
       } as Holiday;
     } catch (err) {

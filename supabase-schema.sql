@@ -97,7 +97,8 @@ CREATE TABLE IF NOT EXISTS public.announcements (
 -- 7. Tabel Hari Libur & Kalender Madrasah (Holidays)
 CREATE TABLE IF NOT EXISTS public.holidays (
   id TEXT PRIMARY KEY,
-  date DATE UNIQUE NOT NULL,
+  date DATE NOT NULL,
+  end_date DATE,
   name TEXT NOT NULL,
   description TEXT,
   is_recurring BOOLEAN DEFAULT false,
@@ -107,6 +108,7 @@ CREATE TABLE IF NOT EXISTS public.holidays (
 
 -- Migration jika tabel holidays sudah ada sebelumnya:
 ALTER TABLE public.holidays ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.holidays ADD COLUMN IF NOT EXISTS end_date DATE;
 
 -- 8. Tabel Lokasi Titik Pusat Sekolah & Radius Geofence (School Location)
 CREATE TABLE IF NOT EXISTS public.school_location (

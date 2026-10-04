@@ -74,7 +74,7 @@ router.get(['/check-today', '/today'], async (req: Request, res: Response) => {
 // 2. POST /api/holidays (Admin add custom holiday to Supabase)
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { date, name, description, is_recurring = false } = req.body;
+    let { date, end_date, name, description, is_recurring = false } = req.body;
 
     if (!date || !name) {
       return res.status(400).json({
@@ -83,29 +83,66 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    // Check if Friday
-    const dateIsFriday = isFriday(date);
-    let fridayWarning: string | null = null;
-    if (dateIsFriday) {
-      fridayWarning = 'Peringatan: Tanggal yang Anda pilih jatuh pada hari Jumat, yang sudah secara otomatis menjadi hari libur mingguan madrasah.';
+    // Normalisasi tanggal: jika end_date tidak diisi, gunakan date
+    let startDate = date.trim();
+    let endDate = end_date ? end_date.trim() : startDate;
+
+    // Jika admin terbalik mengisi tanggal mulai & selesai, otomatis swap
+    if (startDate > endDate) {
+      const temp = startDate;
+      startDate = endDate;
+      endDate = temp;
     }
 
-    // Check duplicate in Supabase
+    // Cek apakah ada hari Jumat di dalam rentang tanggal
+    let hasFriday = false;
+    try {
+      const cur = new Date(startDate + 'T00:00:00');
+      const stop = new Date(endDate + 'T00:00:00');
+      while (cur <= stop) {
+        if (cur.getDay() === 5) {
+          hasFriday = true;
+          break;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+    } catch {
+      hasFriday = isFriday(startDate);
+    }
+
+    let fridayWarning: string | null = null;
+    if (hasFriday) {
+      fridayWarning = (startDate === endDate)
+        ? 'Peringatan: Tanggal yang Anda pilih jatuh pada hari Jumat, yang sudah otomatis menjadi hari libur mingguan madrasah.'
+        : 'Catatan: Rentang tanggal libur ini mencakup hari Jumat (hari libur mingguan madrasah).';
+    }
+
+    // Cek duplikasi atau benturan rentang di database
     const dbList = await supabaseHolidays.getAll();
-    if (dbList && dbList.some((h) => h.date === date)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Hari libur pada tanggal ini sudah terdaftar di database.',
+    if (dbList && dbList.length > 0) {
+      const conflict = dbList.find((h) => {
+        const hStart = h.date;
+        const hEnd = h.end_date || h.date;
+        // Check overlap [startDate, endDate] with [hStart, hEnd]
+        return startDate <= hEnd && endDate >= hStart;
       });
+
+      if (conflict) {
+        return res.status(400).json({
+          success: false,
+          message: `Rentang tanggal ini bertabrakan dengan hari libur "${conflict.name}" (${conflict.date}${conflict.end_date ? ' s/d ' + conflict.end_date : ''}).`,
+        });
+      }
     }
 
     const newHoliday: Holiday = {
       id: crypto.randomUUID(),
-      date,
+      date: startDate,
+      end_date: endDate !== startDate ? endDate : null,
       name: name.trim(),
       description: description ? description.trim() : null,
       is_recurring: Boolean(is_recurring),
-      is_friday: dateIsFriday,
+      is_friday: isFriday(startDate),
       created_at: new Date().toISOString(),
     };
 

@@ -42,7 +42,32 @@ export function checkIsHoliday(
 
   // 2. Hari Minggu TETAP SEKOLAH & ABSENSI NORMAL.
   // Hanya libur jika tanggal tersebut secara khusus didaftarkan sebagai hari libur nasional di database.
-  const found = customHolidays.find((h) => h.date === dateStr);
+  // Cek apakah dateStr berada dalam rentang date s/d end_date (inklusif) atau berulang tiap tahun
+  const found = customHolidays.find((h) => {
+    const startDate = h.date;
+    const endDate = h.end_date || h.date;
+
+    // 1. Pengecekan rentang tanggal standar (YYYY-MM-DD)
+    if (dateStr >= startDate && dateStr <= endDate) {
+      return true;
+    }
+
+    // 2. Pengecekan hari libur berulang tahunan (is_recurring)
+    if (h.is_recurring) {
+      const targetMD = dateStr.slice(5); // MM-DD
+      const startMD = startDate.slice(5);
+      const endMD = endDate.slice(5);
+      if (startMD <= endMD) {
+        if (targetMD >= startMD && targetMD <= endMD) return true;
+      } else {
+        // Rentang libur lintas tahun, contoh 25 Desember s/d 05 Januari
+        if (targetMD >= startMD || targetMD <= endMD) return true;
+      }
+    }
+
+    return false;
+  });
+
   if (found) {
     return {
       isHoliday: true,

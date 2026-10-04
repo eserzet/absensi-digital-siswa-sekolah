@@ -20,7 +20,8 @@ export const AdminHolidays: React.FC = () => {
 
   // Add holiday form state
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newDate, setNewDate] = useState('');
+  const [newStartDate, setNewStartDate] = useState('');
+  const [newEndDate, setNewEndDate] = useState('');
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
@@ -55,27 +56,69 @@ export const AdminHolidays: React.FC = () => {
     }
   };
 
-  const handleDateChange = (dateStr: string) => {
-    setNewDate(dateStr);
-    if (!dateStr) {
+  const checkFridayInRange = (startStr: string, endStr: string) => {
+    if (!startStr) {
+      setFridayWarning(null);
+      return;
+    }
+    const d1 = new Date(startStr + 'T00:00:00');
+    const d2 = endStr ? new Date(endStr + 'T00:00:00') : d1;
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime()) || d2 < d1) {
       setFridayWarning(null);
       return;
     }
 
-    const d = new Date(dateStr);
-    if (d.getDay() === 5) {
-      setFridayWarning('Peringatan: Tanggal yang Anda pilih jatuh pada hari Jumat. Hari Jumat sudah secara otomatis diatur sebagai hari libur madrasah.');
+    let hasFriday = false;
+    const cur = new Date(d1);
+    while (cur <= d2) {
+      if (cur.getDay() === 5) {
+        hasFriday = true;
+        break;
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    if (hasFriday) {
+      if (startStr === (endStr || startStr)) {
+        setFridayWarning('Peringatan: Tanggal yang Anda pilih jatuh pada hari Jumat. Hari Jumat sudah secara otomatis diatur sebagai hari libur madrasah.');
+      } else {
+        setFridayWarning('Catatan: Rentang tanggal libur yang Anda tentukan mencakup hari Jumat (hari libur mingguan madrasah).');
+      }
     } else {
       setFridayWarning(null);
     }
   };
 
+  const handleStartDateChange = (val: string) => {
+    setNewStartDate(val);
+    const targetEnd = (!newEndDate || newEndDate < val) ? val : newEndDate;
+    if (!newEndDate || newEndDate < val) {
+      setNewEndDate(val);
+    }
+    checkFridayInRange(val, targetEnd);
+  };
+
+  const handleEndDateChange = (val: string) => {
+    setNewEndDate(val);
+    checkFridayInRange(newStartDate, val);
+  };
+
+  const getDurationCount = (): number => {
+    if (!newStartDate) return 0;
+    const d1 = new Date(newStartDate + 'T00:00:00');
+    const d2 = newEndDate ? new Date(newEndDate + 'T00:00:00') : d1;
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime()) || d2 < d1) return 1;
+    return Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  };
+
   const handleAddHoliday = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDate || !newName.trim()) {
-      setErrorMessage('Tanggal dan nama hari libur wajib diisi.');
+    if (!newStartDate || !newName.trim()) {
+      setErrorMessage('Tanggal mulai dan nama hari libur wajib diisi.');
       return;
     }
+
+    const finalEndDate = newEndDate && newEndDate >= newStartDate ? newEndDate : newStartDate;
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -87,7 +130,8 @@ export const AdminHolidays: React.FC = () => {
         warning?: string;
         holiday: Holiday;
       }>('/holidays', {
-        date: newDate,
+        date: newStartDate,
+        end_date: finalEndDate !== newStartDate ? finalEndDate : null,
         name: newName.trim(),
         description: newDescription.trim(),
         is_recurring: isRecurring,
@@ -96,7 +140,8 @@ export const AdminHolidays: React.FC = () => {
       if (res.success && res.holiday) {
         setHolidays((prev) => [...prev, res.holiday]);
         setShowAddModal(false);
-        setNewDate('');
+        setNewStartDate('');
+        setNewEndDate('');
         setNewName('');
         setNewDescription('');
         setIsRecurring(false);
@@ -191,40 +236,55 @@ export const AdminHolidays: React.FC = () => {
               Belum ada data hari libur kustom yang ditambahkan.
             </div>
           ) : (
-            holidays.map((h) => (
-              <div
-                key={h.id}
-                className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50 transition-colors"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="p-2.5 rounded-2xl bg-slate-100 text-slate-700">
-                    <Calendar className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs sm:text-sm text-slate-900">
-                      {h.name}
-                    </h4>
-                    {h.description && (
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
-                        {h.description}
-                      </p>
-                    )}
-                    <span className="text-[11px] text-slate-400 font-mono mt-0.5 block">
-                      {h.date} {h.is_recurring && '• (Berulang Tiap Tahun)'}
-                    </span>
-                  </div>
-                </div>
+            holidays.map((h) => {
+              const d1 = new Date(h.date + 'T00:00:00');
+              const d2 = h.end_date ? new Date(h.end_date + 'T00:00:00') : d1;
+              const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+              const str1 = !isNaN(d1.getTime()) ? d1.toLocaleDateString('id-ID', options) : h.date;
+              const isRange = Boolean(h.end_date && h.end_date !== h.date);
+              const str2 = isRange && !isNaN(d2.getTime()) ? d2.toLocaleDateString('id-ID', options) : '';
+              const diffDays = isRange ? Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1;
 
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(h)}
-                  className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-                  title="Hapus Hari Libur"
+              return (
+                <div
+                  key={h.id}
+                  className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50 transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-2.5 rounded-2xl bg-slate-100 text-slate-700">
+                      <Calendar className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900">
+                          {h.name}
+                        </h4>
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200/80">
+                          {diffDays} Hari
+                        </span>
+                      </div>
+                      {h.description && (
+                        <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+                          {h.description}
+                        </p>
+                      )}
+                      <span className="text-[11px] text-slate-500 font-mono mt-0.5 block">
+                        {isRange ? `${str1} — ${str2}` : str1} {h.is_recurring && '• (Berulang Tiap Tahun)'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(h)}
+                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                    title="Hapus Hari Libur"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
@@ -260,21 +320,56 @@ export const AdminHolidays: React.FC = () => {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Tanggal Libur
-                </label>
-                <div className="relative flex items-center">
-                  <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3 pointer-events-none" />
-                  <input
-                    type="date"
-                    required
-                    value={newDate}
-                    onChange={(e) => handleDateChange(e.target.value)}
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 dark:bg-[#070b14] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 [color-scheme:light] dark:[color-scheme:dark]"
-                  />
+              {/* 2 Kalender: Tanggal Mulai dan Tanggal Selesai */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Kalender 1: Tanggal Mulai */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Tanggal Mulai
+                  </label>
+                  <div className="relative flex items-center">
+                    <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3 pointer-events-none" />
+                    <input
+                      type="date"
+                      required
+                      value={newStartDate}
+                      onChange={(e) => handleStartDateChange(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-[#070b14] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 [color-scheme:light] dark:[color-scheme:dark]"
+                    />
+                  </div>
+                </div>
+
+                {/* Kalender 2: Tanggal Selesai */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Tanggal Selesai
+                  </label>
+                  <div className="relative flex items-center">
+                    <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400 absolute left-3 pointer-events-none" />
+                    <input
+                      type="date"
+                      required
+                      min={newStartDate || undefined}
+                      value={newEndDate}
+                      onChange={(e) => handleEndDateChange(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-[#070b14] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 [color-scheme:light] dark:[color-scheme:dark]"
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* Ringkasan Durasi Hari Libur */}
+              {newStartDate && (
+                <div className="px-3.5 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
+                  <span className="font-semibold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Total Durasi Libur:</span>
+                  </span>
+                  <span className="font-bold text-emerald-900 dark:text-emerald-200">
+                    {getDurationCount()} Hari {newEndDate && newEndDate !== newStartDate ? `(${newStartDate} s/d ${newEndDate})` : `(${newStartDate})`}
+                  </span>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
