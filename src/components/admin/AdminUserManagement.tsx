@@ -21,6 +21,7 @@ import {
   Copy
 } from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal.js';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 
 const CLASS_OPTIONS = [
   'all',
@@ -36,6 +37,7 @@ export const AdminUserManagement: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [actionNotice, setActionNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   // Edit Student Modal
   const [editStudent, setEditStudent] = useState<Student | null>(null);
@@ -451,13 +453,31 @@ export const AdminUserManagement: React.FC = () => {
                     <span className="w-6 h-6 rounded-lg bg-slate-200/90 text-slate-700 font-black text-[11px] shrink-0 flex items-center justify-center">
                       {idx + 1}
                     </span>
-                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-white shrink-0 border border-slate-200 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPreviewPhotoData({
+                          url: s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username}`,
+                          title: 'Foto Profil Siswa',
+                          studentName: s.full_name,
+                          className: s.class_name,
+                          username: s.username,
+                          notes: s.whatsapp ? `No. WhatsApp: ${s.whatsapp}` : undefined,
+                          isProfilePhoto: true,
+                        })
+                      }
+                      className="group relative w-11 h-11 rounded-xl overflow-hidden bg-white shrink-0 border border-slate-200 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 shadow-2xs transition-all cursor-pointer"
+                      title="Klik untuk melihat foto profil ukuran penuh"
+                    >
                       <img
                         src={s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username}`}
                         alt={s.full_name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                       />
-                    </div>
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <Eye className="w-4 h-4 text-white drop-shadow" />
+                      </div>
+                    </button>
                     <div className="min-w-0">
                       <span className="font-bold text-slate-900 text-xs block truncate">
                         {s.full_name}
@@ -609,13 +629,31 @@ export const AdminUserManagement: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewPhotoData({
+                              url: s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username}`,
+                              title: 'Foto Profil Siswa',
+                              studentName: s.full_name,
+                              className: s.class_name,
+                              username: s.username,
+                              notes: s.whatsapp ? `No. WhatsApp: ${s.whatsapp}` : undefined,
+                              isProfilePhoto: true,
+                            })
+                          }
+                          className="group relative w-9 h-9 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 transition-all cursor-pointer"
+                          title="Klik untuk melihat foto profil ukuran penuh"
+                        >
                           <img
                             src={s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username}`}
                             alt={s.full_name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                           />
-                        </div>
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                          </div>
+                        </button>
                         <div>
                           <span className="font-bold text-slate-900 block">{s.full_name}</span>
                         </div>
@@ -1173,6 +1211,13 @@ export const AdminUserManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* PHOTO PREVIEW MODAL */}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
+      />
 
     </div>
   );

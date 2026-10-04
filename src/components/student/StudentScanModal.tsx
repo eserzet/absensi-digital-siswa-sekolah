@@ -21,8 +21,10 @@ import {
   Image as ImageIcon,
   Zap,
   ZapOff,
-  Navigation
+  Navigation,
+  Eye
 } from 'lucide-react';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 import { api } from '../../lib/api.js';
 import { compressImageToDataUrl } from '../../lib/imageCompression.js';
 import { AttendanceRecord, SchoolLocation } from '../../types.js';
@@ -102,6 +104,7 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
   const [alreadyAttendedRecord, setAlreadyAttendedRecord] = useState<AttendanceRecord | null>(null);
   const [todayHoliday, setTodayHoliday] = useState<{ isHoliday: boolean; name?: string; description?: string } | null>(null);
   const [attendanceCutoffTime, setAttendanceCutoffTime] = useState<string>('');
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   // Step Reset and Lifecycle Initialization
   useEffect(() => {
@@ -1200,12 +1203,50 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
                     {alreadyAttendedRecord.photo_url && (
                       <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
                         <span className="text-xs text-slate-500">Foto Dokumentasi:</span>
-                        <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-300">
-                          <img
-                            src={alreadyAttendedRecord.photo_url}
-                            alt="Foto Siswa"
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewPhotoData({
+                                url: alreadyAttendedRecord.photo_url!,
+                                title: 'Bukti Absensi (Selfie)',
+                                studentName: 'Presensi Anda Hari Ini',
+                                statusBadge: alreadyAttendedRecord.status,
+                                timestamp: `${alreadyAttendedRecord.date} • ${alreadyAttendedRecord.time} WIB`,
+                                distanceMeters: alreadyAttendedRecord.distance_meters,
+                                isProfilePhoto: false,
+                              })
+                            }
+                            className="group relative w-10 h-10 rounded-lg overflow-hidden border border-slate-300 hover:border-emerald-500 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                            title="Klik untuk memperbesar foto dokumentasi"
+                          >
+                            <img
+                              src={alreadyAttendedRecord.photo_url}
+                              alt="Foto Siswa"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <Eye className="w-3.5 h-3.5 text-white" />
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewPhotoData({
+                                url: alreadyAttendedRecord.photo_url!,
+                                title: 'Bukti Absensi (Selfie)',
+                                studentName: 'Presensi Anda Hari Ini',
+                                statusBadge: alreadyAttendedRecord.status,
+                                timestamp: `${alreadyAttendedRecord.date} • ${alreadyAttendedRecord.time} WIB`,
+                                distanceMeters: alreadyAttendedRecord.distance_meters,
+                                isProfilePhoto: false,
+                              })
+                            }
+                            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Lihat Foto</span>
+                          </button>
                         </div>
                       </div>
                     )}
@@ -1716,6 +1757,57 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
                       <span className="text-slate-500">Jarak Lokasi:</span>
                       <span className="font-bold text-slate-800">{savedRecord.distance_meters} meter</span>
                     </div>
+
+                    {savedRecord.photo_url && (
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-200/60">
+                        <span className="text-slate-500">Foto Presensi:</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewPhotoData({
+                                url: savedRecord.photo_url!,
+                                title: 'Bukti Absensi (Selfie)',
+                                studentName: 'Presensi Anda Hari Ini',
+                                statusBadge: savedRecord.status,
+                                timestamp: `${savedRecord.date} • ${savedRecord.time} WIB`,
+                                distanceMeters: savedRecord.distance_meters,
+                                isProfilePhoto: false,
+                              })
+                            }
+                            className="group relative w-10 h-10 rounded-lg overflow-hidden border border-emerald-400 hover:border-emerald-600 cursor-pointer shadow-2xs transition-all focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                            title="Klik untuk memperbesar foto presensi"
+                          >
+                            <img
+                              src={savedRecord.photo_url}
+                              alt="Foto Siswa"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <Eye className="w-3.5 h-3.5 text-white" />
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewPhotoData({
+                                url: savedRecord.photo_url!,
+                                title: 'Bukti Absensi (Selfie)',
+                                studentName: 'Presensi Anda Hari Ini',
+                                statusBadge: savedRecord.status,
+                                timestamp: `${savedRecord.date} • ${savedRecord.time} WIB`,
+                                distanceMeters: savedRecord.distance_meters,
+                                isProfilePhoto: false,
+                              })
+                            }
+                            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Lihat Foto</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -1735,6 +1827,13 @@ export const StudentScanModal: React.FC<StudentScanModalProps> = ({
 
         </div>
       </div>
+
+      {/* Photo Preview Modal */}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
+      />
     </div>
   );
 };

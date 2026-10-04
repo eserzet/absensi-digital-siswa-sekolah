@@ -15,9 +15,11 @@ import {
   X,
   AlertCircle,
   ExternalLink,
-  Trash2
+  Trash2,
+  Eye
 } from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal.js';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 
 const CLASS_OPTIONS = [
   'all',
@@ -32,7 +34,7 @@ export const AdminAbsensiLive: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState<AttendanceRecord | null>(null);
@@ -284,13 +286,30 @@ export const AdminAbsensiLive: React.FC = () => {
                     <span className="w-6 h-6 rounded-lg bg-slate-200/90 text-slate-700 font-black text-[11px] shrink-0 flex items-center justify-center">
                       {idx + 1}
                     </span>
-                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-white shrink-0 border border-slate-200 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPreviewPhotoData({
+                          url: rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`,
+                          title: 'Foto Profil Siswa',
+                          studentName: rec.student?.full_name || rec.student_name,
+                          className: rec.student?.class_name || rec.class_name,
+                          username: rec.student?.username,
+                          isProfilePhoto: true,
+                        })
+                      }
+                      className="group relative w-10 h-10 rounded-xl overflow-hidden bg-white shrink-0 border border-slate-200 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 shadow-2xs transition-all cursor-pointer"
+                      title="Klik untuk melihat foto profil ukuran penuh"
+                    >
                       <img
                         src={rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`}
                         alt={rec.student?.full_name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                       />
-                    </div>
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                      </div>
+                    </button>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-slate-900 text-xs block truncate">
@@ -350,13 +369,27 @@ export const AdminAbsensiLive: React.FC = () => {
                   {rec.photo_url ? (
                     <button
                       type="button"
-                      onClick={() => setPreviewPhoto(rec.photo_url || null)}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer"
+                      onClick={() =>
+                        setPreviewPhotoData({
+                          url: rec.photo_url || '',
+                          title: 'Bukti Absensi (Selfie)',
+                          studentName: rec.student?.full_name || rec.student_name,
+                          className: rec.student?.class_name || rec.class_name,
+                          username: rec.student?.username,
+                          statusBadge: rec.status,
+                          timestamp: `${rec.date} ${rec.time} WIB`,
+                          distanceMeters: rec.distance_meters,
+                          notes: rec.notes,
+                          isProfilePhoto: false,
+                        })
+                      }
+                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200/80 cursor-pointer transition-colors"
+                      title="Lihat foto bukti swafoto absensi"
                     >
                       <img
                         src={rec.photo_url}
                         alt="Foto"
-                        className="w-6 h-6 rounded-md object-cover border border-slate-200"
+                        className="w-5 h-5 rounded-md object-cover border border-emerald-300"
                       />
                       <span>Lihat Foto</span>
                     </button>
@@ -437,13 +470,30 @@ export const AdminAbsensiLive: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewPhotoData({
+                              url: rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`,
+                              title: 'Foto Profil Siswa',
+                              studentName: rec.student?.full_name || rec.student_name,
+                              className: rec.student?.class_name || rec.class_name,
+                              username: rec.student?.username,
+                              isProfilePhoto: true,
+                            })
+                          }
+                          className="group relative w-9 h-9 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 transition-all cursor-pointer"
+                          title="Klik untuk melihat foto profil ukuran penuh"
+                        >
                           <img
                             src={rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`}
                             alt={rec.student?.full_name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                           />
-                        </div>
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                          </div>
+                        </button>
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-slate-900 block">{rec.student?.full_name}</span>
@@ -512,17 +562,31 @@ export const AdminAbsensiLive: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4">
                       {rec.photo_url ? (
-                        <div
-                          onClick={() => setPreviewPhoto(rec.photo_url || null)}
-                          className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 hover:scale-110 transition-transform cursor-pointer shadow-xs"
-                          title="Klik untuk memperbesar foto dokumentasi"
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewPhotoData({
+                              url: rec.photo_url || '',
+                              title: 'Bukti Absensi (Selfie)',
+                              studentName: rec.student?.full_name || rec.student_name,
+                              className: rec.student?.class_name || rec.class_name,
+                              username: rec.student?.username,
+                              statusBadge: rec.status,
+                              timestamp: `${rec.date} ${rec.time} WIB`,
+                              distanceMeters: rec.distance_meters,
+                              notes: rec.notes,
+                              isProfilePhoto: false,
+                            })
+                          }
+                          className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 hover:scale-110 hover:ring-2 hover:ring-emerald-400 transition-all cursor-pointer shadow-xs block"
+                          title="Klik untuk memperbesar foto bukti swafoto absensi"
                         >
                           <img
                             src={rec.photo_url}
                             alt="Dokumentasi"
                             className="w-full h-full object-cover"
                           />
-                        </div>
+                        </button>
                       ) : (
                         <span className="text-slate-400 italic text-[11px]">-</span>
                       )}
@@ -657,41 +721,12 @@ export const AdminAbsensiLive: React.FC = () => {
         </div>
       )}
 
-      {/* Photo Preview Modal: Mobile-friendly */}
-      {previewPhoto && (
-        <div
-          onClick={() => setPreviewPhoto(null)}
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl p-3.5 max-w-sm w-full overflow-hidden shadow-2xl space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800">Foto Dokumentasi Swafoto</span>
-              <button
-                type="button"
-                onClick={() => setPreviewPhoto(null)}
-                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <img
-              src={previewPhoto}
-              alt="Preview Dokumentasi Wajah"
-              className="w-full h-auto rounded-2xl object-cover max-h-[65vh]"
-            />
-            <button
-              type="button"
-              onClick={() => setPreviewPhoto(null)}
-              className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Photo Preview Modal */}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
+      />
 
       {/* Delete Attendance Record Confirmation Modal */}
       <ConfirmModal

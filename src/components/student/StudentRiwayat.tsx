@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AttendanceRecord } from '../../types.js';
+import { AttendanceRecord, Student } from '../../types.js';
 import { api } from '../../lib/api.js';
 import { 
   History, 
@@ -8,13 +8,20 @@ import {
   AlertCircle, 
   ImageOff, 
   Calendar,
-  XCircle 
+  XCircle,
+  Eye
 } from 'lucide-react';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 
-export const StudentRiwayat: React.FC = () => {
+interface StudentRiwayatProps {
+  student?: Student | null;
+}
+
+export const StudentRiwayat: React.FC<StudentRiwayatProps> = ({ student }) => {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   useEffect(() => {
     fetchHistory();
@@ -50,6 +57,22 @@ export const StudentRiwayat: React.FC = () => {
     { key: 'SAKIT', label: 'Sakit' },
     { key: 'ALPHA', label: 'Alpha' },
   ];
+
+  const openPhotoPreview = (rec: AttendanceRecord) => {
+    if (!rec.photo_url) return;
+    setPreviewPhotoData({
+      url: rec.photo_url,
+      title: 'Bukti Absensi (Selfie)',
+      studentName: rec.student_name || student?.full_name || 'Presensi Anda',
+      className: rec.class_name || student?.class_name,
+      username: student?.username,
+      statusBadge: rec.status,
+      timestamp: `${rec.date} • ${rec.time} WIB`,
+      distanceMeters: rec.distance_meters,
+      notes: rec.notes,
+      isProfilePhoto: false,
+    });
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4 pb-24 font-sans transition-colors pt-1 sm:pt-2 md:pt-4">
@@ -175,23 +198,42 @@ export const StudentRiwayat: React.FC = () => {
                 </div>
 
                 {/* Photo or 24-hour Expiry Notice */}
-                <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 flex-wrap">
                   {rec.photo_url ? (
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openPhotoPreview(rec)}
+                        className="group relative w-12 h-12 rounded-xl overflow-hidden border-2 border-emerald-500/50 hover:border-emerald-600 dark:border-emerald-500/40 dark:hover:border-emerald-400 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer shrink-0 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/50"
+                        title="Klik untuk memperbesar foto absensi"
+                      >
                         <img
                           src={rec.photo_url}
                           alt="Foto Absensi"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
+                        <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
+                          <Eye className="w-4 h-4 text-white drop-shadow-md" />
+                        </div>
+                      </button>
+
+                      <div className="flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() => openPhotoPreview(rec)}
+                          className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:underline flex items-center gap-1.5 cursor-pointer text-left"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Lihat Foto Absensi</span>
+                        </button>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                          Dokumentasi aktif (bisa diperbesar & diunduh)
+                        </span>
                       </div>
-                      <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                        Foto dokumentasi aktif
-                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 text-xs">
-                      <ImageOff className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                      <ImageOff className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" />
                       <span className="italic text-[11px]">
                         {rec.status === 'ALPHA'
                           ? 'Tidak ada foto (Tercatat Alpha otomatis)'
@@ -200,17 +242,37 @@ export const StudentRiwayat: React.FC = () => {
                     </div>
                   )}
 
-                  {rec.notes && (
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 italic">
-                      {rec.notes}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2 ml-auto">
+                    {rec.notes && (
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 italic max-w-[160px] truncate" title={rec.notes}>
+                        {rec.notes}
+                      </span>
+                    )}
+
+                    {rec.photo_url && (
+                      <button
+                        type="button"
+                        onClick={() => openPhotoPreview(rec)}
+                        className="px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 text-[11px] font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Buka Foto</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Lightbox / Fullscreen Preview Modal */}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
+      />
 
     </div>
   );

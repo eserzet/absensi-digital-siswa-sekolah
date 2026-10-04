@@ -8,12 +8,14 @@ import {
   FileSpreadsheet, 
   FileText, 
   Loader2,
-  Calendar
+  Calendar,
+  Eye
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SCHOOL_LOGO_URL } from '../common/Logo.js';
 import { useTheme } from '../../context/ThemeContext.js';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 
 const CLASS_OPTIONS = [
   'all',
@@ -27,6 +29,7 @@ export interface StudentRecapRow {
   full_name: string;
   username: string;
   class_name: string;
+  profile_photo_url?: string;
   hadir: number;
   terlambat: number;
   izin: number;
@@ -57,6 +60,7 @@ export const AdminRekap: React.FC = () => {
     total_alpha: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   useEffect(() => {
     fetchRecapData();
@@ -114,6 +118,7 @@ export const AdminRekap: React.FC = () => {
         full_name: (s.full_name || 'Tanpa Nama').trim(),
         username: s.username || '-',
         class_name: s.class_name || '-',
+        profile_photo_url: s.profile_photo_url,
         hadir: 0,
         terlambat: 0,
         izin: 0,
@@ -152,6 +157,7 @@ export const AdminRekap: React.FC = () => {
           full_name: fullName || 'Siswa',
           username,
           class_name: className,
+          profile_photo_url: r.student?.profile_photo_url,
           hadir: 0,
           terlambat: 0,
           izin: 0,
@@ -849,6 +855,32 @@ export const AdminRekap: React.FC = () => {
                     <span className="px-2 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-black text-[10px] shrink-0">
                       #{idx + 1}
                     </span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPreviewPhotoData({
+                          url: s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username || s.full_name}`,
+                          title: 'Foto Profil Siswa',
+                          studentName: s.full_name,
+                          className: s.class_name,
+                          username: s.username,
+                          isProfilePhoto: true,
+                        })
+                      }
+                      className="group relative w-8 h-8 rounded-lg overflow-hidden bg-white dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 shadow-2xs transition-all cursor-pointer"
+                      title="Klik untuk melihat foto profil ukuran penuh"
+                    >
+                      <img
+                        src={s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username || s.full_name}`}
+                        alt={s.full_name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <Eye className="w-3 h-3 text-white drop-shadow" />
+                      </div>
+                    </button>
+
                     <div className="min-w-0">
                       <span className="font-bold text-slate-900 dark:text-white text-xs block truncate">
                         {s.full_name}
@@ -942,7 +974,33 @@ export const AdminRekap: React.FC = () => {
                       {idx + 1}
                     </td>
                     <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
-                      {s.full_name}
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewPhotoData({
+                              url: s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username || s.full_name}`,
+                              title: 'Foto Profil Siswa',
+                              studentName: s.full_name,
+                              className: s.class_name,
+                              username: s.username,
+                              isProfilePhoto: true,
+                            })
+                          }
+                          className="group relative w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 transition-all cursor-pointer"
+                          title="Klik untuk melihat foto profil ukuran penuh"
+                        >
+                          <img
+                            src={s.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${s.username || s.full_name}`}
+                            alt={s.full_name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                          </div>
+                        </button>
+                        <span>{s.full_name}</span>
+                      </div>
                     </td>
                     <td className="py-3 px-3 text-emerald-700 dark:text-emerald-400 font-bold">
                       {s.class_name}
@@ -1144,6 +1202,13 @@ export const AdminRekap: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* PHOTO PREVIEW MODAL */}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
+      />
 
     </div>
   );

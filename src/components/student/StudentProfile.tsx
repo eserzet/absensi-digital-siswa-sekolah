@@ -15,9 +15,11 @@ import {
   Building2,
   Smartphone,
   CheckCircle2,
-  Instagram
+  Instagram,
+  Eye
 } from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal.js';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 import { usePWAInstall } from '../../hooks/usePWAInstall.js';
 import { PWAInstallButton } from '../pwa/PWAInstallButton.js';
 
@@ -34,6 +36,7 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
 }) => {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   // Normalize gender to prevent mismatch with 'L' or other casing
   const normalizedGender: Gender = 
@@ -123,13 +126,30 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
       
       {/* 1. Main Profile Avatar Card */}
       <div className="bg-white dark:bg-[#0d1322] rounded-2xl p-6 sm:p-7 border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden card-2d transition-all">
-        <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full p-1 bg-gradient-to-tr from-emerald-600 to-emerald-400 shadow-xl shadow-emerald-600/20 overflow-hidden mb-4">
+        <button
+          type="button"
+          onClick={() =>
+            setPreviewPhotoData({
+              url: student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`,
+              title: 'Foto Profil Siswa',
+              studentName: student.full_name,
+              className: student.class_name,
+              username: student.username,
+              isProfilePhoto: true,
+            })
+          }
+          className="group relative w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full p-1 bg-gradient-to-tr from-emerald-600 to-emerald-400 shadow-xl shadow-emerald-600/20 overflow-hidden mb-4 cursor-pointer hover:scale-105 active:scale-95 transition-transform block focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+          title="Klik untuk memperbesar foto profil"
+        >
           <img
             src={student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`}
             alt={student.full_name}
             className="w-full h-full object-cover rounded-full bg-white dark:bg-slate-800"
           />
-        </div>
+          <div className="absolute inset-0 rounded-full bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+            <Eye className="w-6 h-6 text-white drop-shadow-md" />
+          </div>
+        </button>
 
         <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
           {student.full_name}
@@ -445,6 +465,13 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({
           onLogout();
         }}
         onCancel={() => setShowLogoutConfirm(false)}
+      />
+
+      {/* PHOTO PREVIEW MODAL */}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
       />
 
     </div>

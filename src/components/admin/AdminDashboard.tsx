@@ -14,13 +14,15 @@ import {
   ChevronRight,
   CalendarDays,
   Trash2,
-  GraduationCap
+  GraduationCap,
+  Eye
 } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { AttendanceRecord, Student } from '../../types.js';
 import { AdminMenuTab } from './AdminSidebar.js';
 import { getWIBTimeString, formatIndonesianDate } from '../../lib/dateUtils.js';
 import { ConfirmModal } from '../common/ConfirmModal.js';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 
 interface AdminDashboardProps {
   onNavigateTab: (tab: AdminMenuTab) => void;
@@ -173,7 +175,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
     },
   ];
 
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -388,13 +390,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-white shrink-0 border border-slate-200 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPreviewPhotoData({
+                          url: rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`,
+                          title: 'Foto Profil Siswa',
+                          studentName: rec.student?.full_name || rec.student_name,
+                          className: rec.student?.class_name || rec.class_name,
+                          username: rec.student?.username,
+                          isProfilePhoto: true,
+                        })
+                      }
+                      className="group relative w-9 h-9 rounded-xl overflow-hidden bg-white shrink-0 border border-slate-200 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 shadow-2xs transition-all cursor-pointer"
+                      title="Klik untuk melihat foto profil ukuran penuh"
+                    >
                       <img
                         src={rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`}
                         alt={rec.student?.full_name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                       />
-                    </div>
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                      </div>
+                    </button>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-slate-900 text-xs block truncate">
@@ -439,13 +458,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
                     {rec.photo_url ? (
                       <button
                         type="button"
-                        onClick={() => setPreviewPhoto(rec.photo_url || null)}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer"
+                        onClick={() =>
+                          setPreviewPhotoData({
+                            url: rec.photo_url || '',
+                            title: 'Bukti Absensi (Selfie)',
+                            studentName: rec.student?.full_name || rec.student_name,
+                            className: rec.student?.class_name || rec.class_name,
+                            username: rec.student?.username,
+                            statusBadge: rec.status,
+                            timestamp: `${rec.date} ${rec.time} WIB`,
+                            distanceMeters: rec.distance_meters,
+                            notes: rec.notes,
+                            isProfilePhoto: false,
+                          })
+                        }
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200/80 cursor-pointer transition-colors"
+                        title="Lihat foto bukti absensi"
                       >
                         <img
                           src={rec.photo_url}
                           alt="Foto"
-                          className="w-5 h-5 rounded-md object-cover border border-slate-200"
+                          className="w-5 h-5 rounded-md object-cover border border-emerald-300"
                         />
                         <span>Lihat Foto</span>
                       </button>
@@ -502,13 +535,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewPhotoData({
+                              url: rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`,
+                              title: 'Foto Profil Siswa',
+                              studentName: rec.student?.full_name || rec.student_name,
+                              className: rec.student?.class_name || rec.class_name,
+                              username: rec.student?.username,
+                              isProfilePhoto: true,
+                            })
+                          }
+                          className="group relative w-8 h-8 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 transition-all cursor-pointer"
+                          title="Klik untuk melihat foto profil ukuran penuh"
+                        >
                           <img
                             src={rec.student?.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${rec.student?.username}`}
                             alt={rec.student?.full_name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                           />
-                        </div>
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                            <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                          </div>
+                        </button>
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-slate-900 block">{rec.student?.full_name}</span>
@@ -548,9 +598,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
                       {rec.photo_url ? (
                         <button
                           type="button"
-                          onClick={() => setPreviewPhoto(rec.photo_url || null)}
-                          className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 hover:scale-105 transition-transform cursor-pointer block"
-                          title="Klik untuk memperbesar foto"
+                          onClick={() =>
+                            setPreviewPhotoData({
+                              url: rec.photo_url || '',
+                              title: 'Bukti Absensi (Selfie)',
+                              studentName: rec.student?.full_name || rec.student_name,
+                              className: rec.student?.class_name || rec.class_name,
+                              username: rec.student?.username,
+                              statusBadge: rec.status,
+                              timestamp: `${rec.date} ${rec.time} WIB`,
+                              distanceMeters: rec.distance_meters,
+                              notes: rec.notes,
+                              isProfilePhoto: false,
+                            })
+                          }
+                          className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 hover:scale-105 hover:ring-2 hover:ring-emerald-400 transition-all cursor-pointer block"
+                          title="Klik untuk memperbesar foto absensi"
                         >
                           <img
                             src={rec.photo_url}
@@ -581,42 +644,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigateTab })
       </div>
 
       {/* Photo Preview Modal */}
-      {previewPhoto && (
-        <div
-          onClick={() => setPreviewPhoto(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xs animate-in fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl p-4 max-w-sm w-full shadow-2xl border border-slate-100 space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800">Foto Dokumentasi Absensi</span>
-              <button
-                type="button"
-                onClick={() => setPreviewPhoto(null)}
-                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 aspect-4/3">
-              <img
-                src={previewPhoto}
-                alt="Bukti Kehadiran"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setPreviewPhoto(null)}
-              className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
+      />
 
       {/* Delete Attendance Record Confirmation Modal */}
       <ConfirmModal

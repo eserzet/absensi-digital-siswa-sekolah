@@ -16,8 +16,10 @@ import {
   Info,
   XCircle,
   History,
-  BookOpen
+  BookOpen,
+  Eye
 } from 'lucide-react';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 import { api } from '../../lib/api.js';
 import { getWIBTimeString, formatIndonesianDate } from '../../lib/dateUtils.js';
 import { StudentAnnouncementsModal } from './StudentAnnouncementsModal.js';
@@ -59,6 +61,7 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
 }) => {
   const { branding } = useTheme();
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
   const [internalTodayRecord, setInternalTodayRecord] = useState<AttendanceRecord | null>(null);
   const [internalIsHoliday, setInternalIsHoliday] = useState<boolean>(() => new Date().getDay() === 5);
   const [internalHolidayName, setInternalHolidayName] = useState<string>(
@@ -219,13 +222,30 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
         {/* Foreground Content - Horizontal Layout: Foto di Kiri, Teks Sejajar di Kanan */}
         <div className="relative z-10 flex items-center gap-4 sm:gap-5 w-full">
           {/* Avatar Foto Profil Siswa di Kiri (Bentuk Bulat) */}
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-1 bg-gradient-to-tr from-emerald-500 to-emerald-300 dark:from-emerald-400 dark:to-teal-300 shadow-xl shadow-black/40 shrink-0 overflow-hidden">
+          <button
+            type="button"
+            onClick={() =>
+              setPreviewPhotoData({
+                url: student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`,
+                title: 'Foto Profil Siswa',
+                studentName: student.full_name,
+                className: student.class_name,
+                username: student.username,
+                isProfilePhoto: true,
+              })
+            }
+            className="group relative w-16 h-16 sm:w-20 sm:h-20 rounded-full p-1 bg-gradient-to-tr from-emerald-500 to-emerald-300 dark:from-emerald-400 dark:to-teal-300 shadow-xl shadow-black/40 shrink-0 overflow-hidden cursor-pointer hover:scale-105 active:scale-95 transition-transform focus:outline-hidden focus:ring-2 focus:ring-emerald-400"
+            title="Klik untuk melihat foto profil penuh"
+          >
             <img
               src={student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`}
               alt={student.full_name}
               className="w-full h-full object-cover rounded-full bg-slate-900"
             />
-          </div>
+            <div className="absolute inset-0 rounded-full bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <Eye className="w-5 h-5 text-white drop-shadow-md" />
+            </div>
+          </button>
 
           {/* Info Siswa di Kanan Sejajar */}
           <div className="flex flex-col min-w-0 flex-1 justify-center space-y-1">
@@ -388,13 +408,39 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleNavigateRiwayat}
-                className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 bg-white dark:bg-[#080c14] px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 cursor-pointer transition-colors"
-              >
-                Riwayat <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {effectiveTodayRecord.photo_url && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPreviewPhotoData({
+                        url: effectiveTodayRecord.photo_url!,
+                        title: 'Bukti Absensi (Selfie)',
+                        studentName: student.full_name,
+                        className: student.class_name,
+                        statusBadge: effectiveTodayRecord.status,
+                        timestamp: `${effectiveTodayRecord.date} • ${effectiveTodayRecord.time} WIB`,
+                        distanceMeters: effectiveTodayRecord.distance_meters,
+                        notes: effectiveTodayRecord.notes,
+                        isProfilePhoto: false,
+                      })
+                    }
+                    className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 bg-white dark:bg-[#080c14] px-2.5 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 cursor-pointer transition-colors shadow-2xs hover:shadow-xs"
+                    title="Lihat foto absensi hari ini"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Foto</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleNavigateRiwayat}
+                  className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 bg-white dark:bg-[#080c14] px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  Riwayat <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             {effectiveTodayRecord.status === 'TERLAMBAT' && (
@@ -523,6 +569,13 @@ export const StudentHome: React.FC<StudentHomeProps> = ({
         onClose={() => setIsAnnouncementsModalOpen(false)}
         onMarkRead={handleMarkRead}
         onMarkAllRead={handleMarkAllRead}
+      />
+
+      {/* Photo Preview Modal */}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
       />
 
     </div>

@@ -400,7 +400,7 @@ export default function App() {
           )}
 
           {studentTab === 'riwayat' && (
-            <StudentRiwayat />
+            <StudentRiwayat student={currentStudent} />
           )}
 
           {studentTab === 'profile' && (

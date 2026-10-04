@@ -16,9 +16,11 @@ import {
   HelpCircle,
   ArrowRight,
   MapPin,
-  ChevronDown
+  ChevronDown,
+  Eye
 } from 'lucide-react';
 import { formatIndonesianDate } from '../../lib/dateUtils.js';
+import { PhotoPreviewModal, PhotoPreviewData } from '../common/PhotoPreviewModal.js';
 
 interface ClassStat {
   className: string;
@@ -47,7 +49,7 @@ export const AdminMonitoringKelas: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+  const [previewPhotoData, setPreviewPhotoData] = useState<PhotoPreviewData | null>(null);
 
   const isToday = useMemo(() => {
     const now = new Date();
@@ -495,13 +497,31 @@ export const AdminMonitoringKelas: React.FC = () => {
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setPreviewPhotoData({
+                                url: student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`,
+                                title: 'Foto Profil Siswa',
+                                studentName: student.full_name,
+                                className: student.class_name,
+                                username: student.username,
+                                notes: student.gender ? `Jenis Kelamin: ${student.gender}` : undefined,
+                                isProfilePhoto: true,
+                              })
+                            }
+                            className="group relative w-8 h-8 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 transition-all cursor-pointer"
+                            title="Klik untuk melihat foto profil ukuran penuh"
+                          >
                             <img
                               src={student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`}
                               alt={student.full_name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                             />
-                          </div>
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                            </div>
+                          </button>
                           <div>
                             <span className="font-bold text-slate-900 dark:text-white block">{student.full_name}</span>
                           </div>
@@ -547,8 +567,21 @@ export const AdminMonitoringKelas: React.FC = () => {
                         {record?.photo_url ? (
                           <button
                             type="button"
-                            onClick={() => setPreviewPhoto(record.photo_url || null)}
-                            className="inline-block w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 hover:scale-105 transition-transform cursor-pointer"
+                            onClick={() =>
+                              setPreviewPhotoData({
+                                url: record.photo_url || '',
+                                title: 'Bukti Absensi (Selfie)',
+                                studentName: student.full_name,
+                                className: student.class_name,
+                                username: student.username,
+                                statusBadge: record.status,
+                                timestamp: `${record.date} ${record.time} WIB`,
+                                distanceMeters: record.distance_meters,
+                                notes: record.notes,
+                                isProfilePhoto: false,
+                              })
+                            }
+                            className="inline-block w-8 h-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 hover:scale-105 hover:ring-2 hover:ring-emerald-500 transition-all cursor-pointer"
                             title="Klik untuk melihat foto swafoto"
                           >
                             <img
@@ -589,13 +622,31 @@ export const AdminMonitoringKelas: React.FC = () => {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-9 h-9 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewPhotoData({
+                            url: student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`,
+                            title: 'Foto Profil Siswa',
+                            studentName: student.full_name,
+                            className: student.class_name,
+                            username: student.username,
+                            notes: student.gender ? `Jenis Kelamin: ${student.gender}` : undefined,
+                            isProfilePhoto: true,
+                          })
+                        }
+                        className="group relative w-10 h-10 rounded-xl overflow-hidden bg-white dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:ring-2 hover:ring-emerald-400/50 transition-all cursor-pointer"
+                        title="Klik untuk melihat foto profil ukuran penuh"
+                      >
                         <img
                           src={student.profile_photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${student.username}`}
                           alt={student.full_name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                         />
-                      </div>
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <Eye className="w-3.5 h-3.5 text-white drop-shadow" />
+                        </div>
+                      </button>
                       <div className="min-w-0">
                         <span className="font-bold text-slate-900 dark:text-white text-xs block truncate">
                           {student.full_name}
@@ -637,7 +688,20 @@ export const AdminMonitoringKelas: React.FC = () => {
                     {record?.photo_url && (
                       <button
                         type="button"
-                        onClick={() => setPreviewPhoto(record.photo_url || null)}
+                        onClick={() =>
+                          setPreviewPhotoData({
+                            url: record.photo_url || '',
+                            title: 'Bukti Absensi (Selfie)',
+                            studentName: student.full_name,
+                            className: student.class_name,
+                            username: student.username,
+                            statusBadge: record.status,
+                            timestamp: `${record.date} ${record.time} WIB`,
+                            distanceMeters: record.distance_meters,
+                            notes: record.notes,
+                            isProfilePhoto: false,
+                          })
+                        }
                         className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
                       >
                         Lihat Foto
@@ -652,29 +716,11 @@ export const AdminMonitoringKelas: React.FC = () => {
       </div>
 
       {/* Modal Preview Photo */}
-      {previewPhoto && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 max-w-sm w-full space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-slate-800 dark:text-slate-200">Foto Dokumentasi</span>
-              <button
-                type="button"
-                onClick={() => setPreviewPhoto(null)}
-                className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="rounded-2xl overflow-hidden aspect-4/3 bg-black flex items-center justify-center">
-              <img
-                src={previewPhoto}
-                alt="Dokumentasi Absensi"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <PhotoPreviewModal
+        isOpen={Boolean(previewPhotoData)}
+        onClose={() => setPreviewPhotoData(null)}
+        data={previewPhotoData}
+      />
 
     </div>
   );
